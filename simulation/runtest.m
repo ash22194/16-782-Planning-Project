@@ -36,6 +36,7 @@ costmap = envmap;
 
 envmap(envmap<255) = 0;
 bogmap = robotics.BinaryOccupancyGrid(envmap);
+bogmap2 = robotics.BinaryOccupancyGrid(envmap);
 
 robotRadius = 1;
 robot = RobotSimulator(bogmap);
@@ -44,8 +45,8 @@ robot.setRobotSize(robotRadius);
 robot.showTrajectory(true);
 
 % Inflate costmap based on robotRadius
-inflate(bogmap, robotRadius+1);
-bogmat = occupancyMatrix(bogmap);
+inflate(bogmap2, robotRadius);
+bogmat = occupancyMatrix(bogmap2);
 costmap(bogmat) = 255;
 
 f2 = figure('Name', 'Inflated Cost Map');
