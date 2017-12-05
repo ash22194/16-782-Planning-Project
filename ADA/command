@@ -1,0 +1,1 @@
+mex planner.cpp -I./usr/local/include/sbpl -L./usr/local/lib -lsbpl
