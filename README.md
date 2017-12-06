@@ -16,7 +16,7 @@ All planners are implemented in C++ and the visualizations are in MATLAB. The AD
 2) [LAPACK-3.8](http://www.netlib.org/lapack/#_lapack_version_3_8_0_2)
 
 ## ADA*
-1) sbpl, provided in the repository.
+1) SBPL, provided in the repository.
 
 ## RRT*
 1) Self contained
