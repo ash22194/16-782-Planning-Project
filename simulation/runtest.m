@@ -175,10 +175,14 @@ goalRadius = 0.1;
 % reaches the goal. The controller runs at 10 Hz.
 reset(controlRate);
 fexec = figure('Name','Execution');
+movegui(fexec,'north');
+
+% move robot simulator figure to the top left corner
+movegui(1,'northwest');
 
 while (distanceToGoal > goalRadius)
     
-    figure(fexec);
+    f1 = figure(fexec);
     cm = imagesc(curmap);
     colorbar();
     hold on;
