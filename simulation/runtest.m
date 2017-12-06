@@ -186,7 +186,7 @@ controller.MaxAngularVelocity = deg2rad(114.592);
 % lookahead distance is large. In contrast, a small lookahead distance can
 % result in an unstable path following behavior. A value of 0.5 m was chosen
 % for this example.
-controller.LookaheadDistance = 0.5;
+controller.LookaheadDistance = 3;
 % The |<docid:robotics_ref.buoofp1-1 controller>| object computes control commands for the robot.
 % Drive the robot using these control commands until it reaches within the
 % goal radius. If you are using an external simulator or a physical robot,
@@ -210,74 +210,84 @@ goalRadius = 0.1;
 % Drive the robot using the controller output on the given map until it
 % reaches the goal. The controller runs at 10 Hz.
 reset(controlRate);
-while( distanceToGoal > goalRadius )
-    
-    % Compute the controller outputs, i.e., the inputs to the robot
-    [v, omega] = controller(robot.getRobotPose);
-    
-    % Simulate the robot using the controller outputs
-    drive(robot, v, omega);
-    
-    % Extract current location information from the current pose
-    robotCurrentPose = robot.getRobotPose;
-    
-    sr = 10;
-    C = round([CX(robotCurrentPose(1,2)) CY(robotCurrentPose(1,1))]);
-    
-    X = [C(1)-sr C(1)+sr];
-    X(X < 1) = 1;
-    X(X > sizeX) = sizeX;
-    
-    Y = [C(2)-sr C(2)+sr];
-    Y(Y < 1) = 1;
-    Y(Y > sizeY) = sizeY;
-    
-    for i=X(1):1:X(2)
-        for j=Y(1):1:Y(2)
-            r = norm([i j] - C);
-            if (r <= sr)
-                curmap(i, j) = costmap(i, j);
+obsmap = (curmap == 255);
+eps = 4;
+curmap_ = create_costmap_sqdist(~obsmap,eps);
+maxcurmap = max(max(curmap_));
+
+while (distanceToGoal > goalRadius)
+
+    while( distanceToGoal > goalRadius )
+
+        % Compute the controller outputs, i.e., the inputs to the robot
+        [v, omega] = controller(robot.getRobotPose);
+
+        % Simulate the robot using the controller outputs
+        drive(robot, v, omega);
+
+        % Extract current location information from the current pose
+        robotCurrentPose = robot.getRobotPose;
+
+        sr = 10;
+        C = round([CX(robotCurrentPose(1,2)) CY(robotCurrentPose(1,1))]);
+
+        X = [C(1)-sr C(1)+sr];
+        X(X < 1) = 1;
+        X(X > sizeX) = sizeX;
+
+        Y = [C(2)-sr C(2)+sr];
+        Y(Y < 1) = 1;
+        Y(Y > sizeY) = sizeY;
+
+        for i=X(1):1:X(2)
+            for j=Y(1):1:Y(2)
+                r = norm([i j] - C);
+                if (r <= sr)
+                    curmap(i, j) = costmap(i, j);
+                end
             end
         end
+        figure(3);
+        image(255 - curmap);
+        colormap(gray(256));
+        axis image;
+
+        % Re-compute the distance to the goal
+        distanceToGoal = norm(robotCurrentPose(1:2) - robotGoal);
+
+        waitfor(controlRate);
     end
-    figure(3);
-    image(255 - curmap);
-    colormap(gray(256));
-    axis image;
+    
     % Run ADA
-    [pathADA, pathlengthADA, pathcostADA] = plannerADA(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+    [pathADA, pathlengthADA, ~] = plannerADA(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+    pathcostADA = computeFinalCost(pathADA,curmap);
     
     % Run CHOMP
-    obsmap = (curmap == 255);
     varcostmap = zeros(size(curmap));
     varcostmap(~obsmap) = curmap(~obsmap);
-    eps = 4;
-    curmap_ = create_costmap_sqdist(~obsmap,eps);
-    maxcurmap = max(max(curmap_));
     varcostmap = varcostmap/255*maxcurmap;
     curmapCHOMP = varcostmap + curmap_;
     [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
     pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
     
     % Run RRT
-    %[pathRRT, pathlengthRRT, pathcostRRT] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+    [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+    pathcostRRT = computeFinalCost(pathCHOMP,curmap);
     
     costs = [pathcostADA, pathcostCHOMP,pathcostRRT];
     [~,i] = min(costs);
     if (i==1)
-        
+        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathADA,controller.LookaheadDistance);
+        path = pathADA(1:indexLookAhead,:);
     elseif (i==2)
-        
+        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathCHOMP,controller.LookaheadDistance);
+        path = pathCHOMP(1:indexLookAhead,:);
     else
-        
+        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathRRT,controller.LookaheadDistance);        
+        path = pathRRT(1:indexLookAhead,:);
     end
     
-    % Re-compute the distance to the goal
-    distanceToGoal = norm(robotCurrentPose(1:2) - robotGoal);
-    
-    waitfor(controlRate);
 end
-
 %%
 % The simulated robot has reached the goal location using the path following
 % controller along the desired path. Stop the robot.
