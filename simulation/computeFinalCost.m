@@ -11,6 +11,12 @@ function cost = computeFinalCost(path,map)
     % and the second column is row indices 
     sub = sub2ind(size(map),gridpath(:,1),gridpath(:,2));
     c = map(sub);
-    value = (1+c/255);
-    cost = sum(sqrt(sum(diff(path,1).^2,2)).*value);
+    blocked = sum(c==255)>0;
+    if (blocked)
+        cost = inf;
+    else
+        value = (1+c/255);
+        cost = sum(sqrt(sum(diff(path,1).^2,2)).*value);
+    end
+    
 end

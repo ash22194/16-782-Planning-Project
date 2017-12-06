@@ -108,8 +108,8 @@ CY = @(rx) (rx);
 initialOrientation = 0;
 
 % locations wrt. cost map axes
-robotCurrentLocationC = [5 10 initialOrientation];
-robotGoalC = [15.0 25.0 initialOrientation];
+robotCurrentLocationC = [28 5 initialOrientation];
+robotGoalC = [15.0 29.0 initialOrientation];
 
 % Define the current pose for robot motion [x y theta]
 robotCurrentPose = [RX(robotCurrentLocationC(2)) RY(robotCurrentLocationC(1)) initialOrientation];
@@ -223,8 +223,8 @@ while (distanceToGoal > goalRadius)
     tElapsedRRT = toc(tStart);
     fprintf('RRT : %f\n',pathcostRRT);
     
-    %costs = [pathcostADA, pathcostCHOMP, pathcostRRT];
-    costs = [inf, pathcostCHOMP, inf];
+    costs = [pathcostADA, pathcostCHOMP, pathcostRRT];
+    %costs = [inf, pathcostCHOMP, inf];
     [~,i] = min(costs);
     
     if (i==1)
@@ -241,8 +241,8 @@ while (distanceToGoal > goalRadius)
     elseif (i==2)
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathCHOMP,controller.LookaheadDistance);
         pathC = pathCHOMP(1:indexLookAhead,:);
-%         figure(fexec);
-%         fada = plot(pathADA(:,2),pathADA(:,1),'r');
+        figure(fexec);
+        fada = plot(pathADA(:,2),pathADA(:,1),'r');
         figure(fexec);
         fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'g');        
         tElapsed = tElapsedCHOMP;
@@ -325,9 +325,9 @@ while (distanceToGoal > goalRadius)
         end
     end
     distanceToGoal = norm(robotCurrentLocationC(1:2) - robotGoalC(1:2));
-    %delete(fada);
-    delete(fchomp);
-%     delete(frrt);
+    delete(fada);
+    delete(fchomp);     
+    delete(frrt);
 end
 %%
 % The simulated robot has reached the goal location using the path following

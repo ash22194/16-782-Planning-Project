@@ -23,7 +23,7 @@
 
 /*access to the map is shifted to account for 0-based indexing in the map, whereas
 1-based indexing in matlab (so, robotpose and goalpose are 1-indexed)*/
-#define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y-1)*XSIZE + (X-1))
+#define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y)*XSIZE + (X))
 // #define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((X-1)*YSIZE + (YSIZE-Y+1-1))
 
 #if !defined(MAX)
@@ -41,11 +41,20 @@ void convertCostMap (arma::mat& costMap, double* map, int x_size, int y_size)
     costMap.zeros(y_size,x_size);
     for (int i=0; i<x_size; i++) {
         for (int j=0; j<y_size; j++) {
-            costMap(j,i) = map[GETMAPINDEX(i,j,x_size,y_size)];
+            costMap(j,i) = map[GETMAPINDEX(j,i,x_size,y_size)];
         }
     }
 };
 
+void printMap(double* map, int x_size, int y_size) 
+{
+    for (int i=0; i<x_size; i++) {
+        for (int j=0; j<y_size; j++) {
+            std::cout<<map[GETMAPINDEX(j,i,x_size,y_size)]<<" ";
+        }
+        std::cout<<std::endl;
+    }
+};
 
 static void planner(double*	map, int x_size, int y_size,
                     float robotposeX, float robotposeY, float robotposeTheta,
@@ -53,7 +62,8 @@ static void planner(double*	map, int x_size, int y_size,
                     int numofDOFs, double*** plan, int* planlength, double* plancost,
                     float epsilon, float time)
 {   
-    
+    // printMap(map,x_size,y_size);
+    // std::cout<<"Size : "<<x_size<<","<<y_size<<std::endl;
     arma::mat costLoad;
     arma::vec o; o.zeros(2);
     convertCostMap(costLoad,map,x_size,y_size);
