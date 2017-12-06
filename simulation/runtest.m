@@ -30,12 +30,12 @@
 %% Start Robot Simulator with a simple map
 
 close all;
-
 envmap = load('data/map5.txt');
 costmap = envmap;
 
 envmap(envmap<255) = 0;
 bogmap = robotics.BinaryOccupancyGrid(envmap);
+bogmap2 = robotics.BinaryOccupancyGrid(envmap);
 
 robotRadius = 1;
 robot = RobotSimulator(bogmap);
@@ -44,25 +44,25 @@ robot.setRobotSize(robotRadius);
 robot.showTrajectory(true);
 
 % Inflate costmap based on robotRadius
-inflate(bogmap, robotRadius+1);
-bogmat = occupancyMatrix(bogmap);
+inflate(bogmap2, robotRadius);
+bogmat = occupancyMatrix(bogmap2);
 costmap(bogmat) = 255;
 
-f2 = figure('Name', 'Inflated Cost Map');
-image(255 - costmap);
-colormap(gray(256));
-axis image;
-movegui(f2,'northwest');
+% f2 = figure('Name', 'Inflated Cost Map');
+% image(255 - costmap);
+% colormap(gray(256));
+% axis image;
+% movegui(f2,'northwest');
 
 [sizeX, sizeY] = size(costmap);
 curmap = zeros(sizeX, sizeY);
 curmap(bogmat) = 255;
 
-f3 = figure('Name', 'Current Cost Map');
-image(255 - curmap);
-colormap(gray(256));
-axis image;
-movegui(f3,'northeast');
+% f3 = figure('Name', 'Current Cost Map');
+% image(255 - curmap);
+% colormap(gray(256));
+% axis image;
+% movegui(f3,'northeast');
 
 %%
 % You can compute the |path| using the PRM path planning algorithm. See
@@ -99,7 +99,7 @@ CY = @(rx) (rx);
 
 % locations wrt. cost map axes
 robotCurrentLocationC = [5 10];
-robotGoalC = [15.0 30.0];
+robotGoalC = [15.0 29.0];
 
 % locations wrt. robot axes
 robotCurrentLocation = [RX(robotCurrentLocationC(2)) RY(robotCurrentLocationC(1))];
@@ -133,18 +133,36 @@ for i=X(1):1:X(2)
         end
     end
 end
-figure(3);
-image(255 - curmap);
-colormap(gray(256));
-axis image;
+% figure(3);
+% image(255 - curmap);
+% colormap(gray(256));
+% axis image;
 
 robotCurrentConfigC = [robotCurrentLocationC initialOrientation];
 robotGoalConfigC = [robotGoalC initialOrientation];
-[pathC, pathlength, pathcost] = planner(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
+obsmap = (curmap == 255);
+varcostmap = zeros(size(curmap));
+varcostmap(~obsmap) = curmap(~obsmap);
+eps = 4;
+curmap_ = create_costmap_sqdist(~obsmap,eps);
+maxcurmap = max(max(curmap_));
+varcostmap = varcostmap/255*maxcurmap;
+curmapCHOMP = varcostmap + curmap_;
+[pathC, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+% hold on;
+% plot(pathCHOMP(:,1),pathCHOMP(:,2),'r');
+[pathADA, pathlength, pathcost] = planner(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
 
 pathR = zeros(size(pathC));
 pathR(:,1) = RX(pathC(:,2));
 pathR(:,2) = RY(pathC(:,1));
+
+pathRADA = zeros(size(pathADA));
+pathRADA(:,1) = RX(pathADA(:,2));
+pathRADA(:,2) = RY(pathADA(:,1));
+
+hold on;
+plot(pathRADA(:,1),pathRADA(:,2),'r');
 
 %%
 % Display the path
@@ -227,8 +245,32 @@ while( distanceToGoal > goalRadius )
 %     image(255 - curmap);
 %     colormap(gray(256));
 %     axis image;
+%     % Run ADA
+%     [pathADA, pathlengthADA, pathcostADA] = plannerADA(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
 %     
-%     [pathC, pathlength pathcost] = planner(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+%     % Run CHOMP
+%     obsmap = (curmap == 255);
+%     varcostmap = zeros(size(curmap));
+%     varcostmap(~obsmap) = curmap(~obsmap);
+%     eps = 4;
+%     curmap_ = create_costmap_sqdist(~obsmap,eps);
+%     maxcurmap = max(max(curmap_));
+%     varcostmap = varcostmap/255*maxcurmap;
+%     curmapCHOMP = varcostmap + curmap_;
+%     [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+%     pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
+%     
+%     % Run RRT
+%     %[pathRRT, pathlengthRRT, pathcostRRT] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+%     
+%     costs = [pathcostADA, pathcostCHOMP,pathcostRRT];
+%     [~,i] = min(costs);
+%     if (i==1)
+%         
+%     elseif (i==2)
+%         
+%     else
+%     end
     
     % Re-compute the distance to the goal
     distanceToGoal = norm(robotCurrentPose(1:2) - robotGoal);
