@@ -112,7 +112,7 @@ static void planner(double*	map, int x_size, int y_size,
     CHOMP::getInitialTrajectory(start,goal,N,traj);
     *plan = (double**) malloc(N*sizeof(double*));
     CHOMP::chompIterate(traj,optimizedTraj,plancost,costMap,options);
-    std::cout<<"Plan size :"<<optimizedTraj.n_rows<<std::endl;
+    // std::cout<<"Plan size :"<<optimizedTraj.n_rows<<std::endl;
     for (int i=0; i<N; i++) {
         (*plan)[i] = (double*) malloc(sizeof(double)*2);
         (*plan)[i][0] = optimizedTraj(i,0);
@@ -138,7 +138,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int y_size = mxGetN(MAP_IN);
     double* map = mxGetPr(MAP_IN);
     
-    mexPrintf("x_size: %d, y_size: %d\n", x_size, y_size);
+    // mexPrintf("x_size: %d, y_size: %d\n", x_size, y_size);
     
     /* get the dimensions of the robotpose and the robotpose itself*/     
     int robotpose_M = mxGetM(ROBOT_IN);
@@ -155,8 +155,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
     float robotposeY = (float)robotposeV[1];
     float robotposeTheta = (float)robotposeV[2];
     
-    mexPrintf("robotposeX: %.2f, robotposeY: %.2f, robotposeTheta: %.2f\n", 
-              robotposeX, robotposeY, robotposeTheta);
+    // mexPrintf("robotposeX: %.2f, robotposeY: %.2f, robotposeTheta: %.2f\n", 
+    //           robotposeX, robotposeY, robotposeTheta);
     
 //     mexPrintf("cost index: %.2f\n", GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
 //     mexPrintf("cost index: %d\n", (int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
@@ -183,16 +183,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
     float goalposeY = (float)goalposeV[1];
     float goalposeTheta = (float)goalposeV[2];
     
-    mexPrintf("goalposeX: %.2f, goalposeY: %.2f, goalposeTheta: %.2f\n", 
-              goalposeX, goalposeY, goalposeTheta);
+    // mexPrintf("goalposeX: %.2f, goalposeY: %.2f, goalposeTheta: %.2f\n", 
+    //           goalposeX, goalposeY, goalposeTheta);
     
     double* epsilonV = mxGetPr(EPSILON_IN);
     float epsilon = (float)epsilonV[0];
-    mexPrintf("epsilon: %.2f\n", epsilon);
+    // mexPrintf("epsilon: %.2f\n", epsilon);
     
     double* timeV = mxGetPr(TIME_IN);
     float time = (float)timeV[0];
-    mexPrintf("time: %.2f\n", time);
+    // mexPrintf("time: %.2f\n", time);
     
     //call the planner
     double** plan = NULL;
@@ -207,7 +207,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
             numofDOFs, &plan, &planlength, &plancost,
             epsilon, time);
     
-    mexPrintf("planner returned plan of length = %d\n", planlength); 
+    // mexPrintf("planner returned plan of length = %d\n", planlength); 
     
     /* Create return values */
     if(planlength > 0) {

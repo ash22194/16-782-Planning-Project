@@ -418,7 +418,7 @@ void initialize_adplanning_2d(char* envCfgFilename,
     double & allocated_time_secs_foreachplan,
     int & plantime_over1secs, int & plantime_over0p5secs, int & plantime_over0p1secs, int & plantime_over0p05secs, 
     int & plantime_below0p05secs, int & obsthresh, int & is_16_connected, double* original_map){
-    cout << "initialization began!" << endl;
+    // cout << "initialization began!" << endl;
 //     addpath('/home/anahita/Courses/2017/Planning/Project/sbpl-master');
     MDPConfig MDPCfg;
 
@@ -441,7 +441,7 @@ void initialize_adplanning_2d(char* envCfgFilename,
         throw SBPL_Exception("ERROR: InitializeMDPCfg failed");
     }
 
-    cout << "environment initialized!" << endl;
+    // cout << "environment initialized!" << endl;
     
     //initialize true map and robot map
 //     trueenvironment_nav2D.SetConfiguration(size_x, size_y, obsthresh, startx, starty, goalx, goaly, original_map);    
@@ -464,18 +464,18 @@ void initialize_adplanning_2d(char* envCfgFilename,
     
     bool bforwardsearch = false;
     
-    cout << "Initializing ADPlanner...\n";
+    // cout << "Initializing ADPlanner...\n";
     planner_AD = new ADPlanner(&environment_nav2D, bforwardsearch);
 
     planner_AD->set_initialsolution_eps(2.0);
 
-    cout << "ADPlanner set start ..." << MDPCfg.startstateid << "\n";
+    // cout << "ADPlanner set start ..." << MDPCfg.startstateid << "\n";
     //set the start and goal configurations
     if (planner_AD->set_start(MDPCfg.startstateid) == 0) {
         printf("ERROR: failed to set start state\n");
         throw SBPL_Exception("ERROR: failed to set start state");
     }
-    cout << "ADPlanner set goal ..." << MDPCfg.goalstateid << "\n";
+    // cout << "ADPlanner set goal ..." << MDPCfg.goalstateid << "\n";
     if (planner_AD->set_goal(MDPCfg.goalstateid) == 0) {
         printf("ERROR: failed to set goal state\n");
         throw SBPL_Exception("ERROR: failed to set goal state");
@@ -483,7 +483,7 @@ void initialize_adplanning_2d(char* envCfgFilename,
     
     //set search mode
     planner_AD->set_search_mode(false);    
-    cout << "End Initializing ADPlanner\n";  
+    // cout << "End Initializing ADPlanner\n";  
        
 //     cout.flush();
 
@@ -495,7 +495,7 @@ static void planner(double*	original_map, int x_size, int y_size,
                     int numofDOFs, double*** plan, int* planlength, double* plancost ,
                     float epsilon, float time)
 {  
-    cout << "********************* planner.cpp *********************" << endl;
+    // cout << "********************* planner.cpp *********************" << endl;
     
     
     // Check command line arguments to find environment type and whether or not to
@@ -517,8 +517,8 @@ static void planner(double*	original_map, int x_size, int y_size,
     int startx = (robotposeX-1), starty = (robotposeY-1);
     int goalx = (goalposeX-1), goaly = (goalposeY-1);
     
-    cout << "start: " << startx << " " << starty << endl;
-    cout << "goal: " << goalx << " " << goaly << endl;
+    // cout << "start: " << startx << " " << starty << endl;
+    // cout << "goal: " << goalx << " " << goaly << endl;
     
     const char* sol = "sol.txt";
     FILE* fSol = fopen(sol, "a");
@@ -534,7 +534,7 @@ static void planner(double*	original_map, int x_size, int y_size,
             bPrint, size_x, size_y, startx, starty, goalx, goaly, allocated_time_secs_foreachplan, 
             plantime_over1secs, plantime_over0p5secs, plantime_over0p1secs, plantime_over0p05secs, plantime_below0p05secs, obsthresh, is_16_connected, original_map);
 //         cout << "start: " << startx << " " << starty << endl;
-        cout << "Initialization was successful!" << endl;
+        // cout << "Initialization was successful!" << endl;
     }
     else{        
         environment_nav2D.SetStart(startx, starty);
@@ -553,7 +553,7 @@ static void planner(double*	original_map, int x_size, int y_size,
     int solution_step = 0;
     
 //     while (abs(startx - goalx) > goalthresh || abs(starty - goaly) > goalthresh) {
-    cout << "Update Map... !" << endl;
+    // cout << "Update Map... !" << endl;
     changedcellsV.clear();
 
     int x = 0;
@@ -576,17 +576,17 @@ static void planner(double*	original_map, int x_size, int y_size,
 
         }
     }
-    cout << "\n";
+    // cout << "\n";
 //     cout << "start: " << startx << " " << starty << endl;
-    cout << "Update Map done!" << endl;
+    // cout << "Update Map done!" << endl;
     int psolcost;
     run_planner(planner_AD, environment_nav2D, fSol, bPrint, size_x, size_y, original_map, startx, starty, goalx, goaly, 
         allocated_time_secs_foreachplan, solution_stateIDs_V,
         plantime_over1secs, plantime_over0p5secs, plantime_over0p1secs, plantime_over0p05secs, plantime_below0p05secs, 
         obsthresh, changedcellsV, &psolcost);
     solution_step += 1;
-    cout << "start: " << startx << " " << starty << endl;
-    cout << "compute solution... " << endl;
+    // cout << "start: " << startx << " " << starty << endl;
+    // cout << "compute solution... " << endl;
     // SOLUTION
     *planlength = solution_stateIDs_V.size();
     *plan = (double**) malloc((*planlength)*sizeof(double*));
@@ -599,11 +599,11 @@ static void planner(double*	original_map, int x_size, int y_size,
         (*plan)[i][0] = next_x+1;
         (*plan)[i][1] = next_y+1;
         //euclidean distance
-        cout << "["<< (*plan)[i][0] << " " << (*plan)[i][1] << "]";
+        // cout << "["<< (*plan)[i][0] << " " << (*plan)[i][1] << "]";
     }
-    cout << "\n";
-    cout << "solcost: " << *plancost << "\n";
-    cout << "end compute solution... " << endl;
+    // cout << "\n";
+    // cout << "solcost: " << *plancost << "\n";
+    // cout << "end compute solution... " << endl;
     // SOLUTION
 
 //     } 
@@ -628,7 +628,7 @@ static void planner(double*	original_map, int x_size, int y_size,
 
     //return plannerRes == 1 ? MAIN_RESULT_SUCCESS : MAIN_RESULT_FAILURE;
     
-    cout << "********************* planner.cpp ended *********************\n";
+    // cout << "********************* planner.cpp ended *********************\n";
     
     cout.flush();
 }
@@ -683,7 +683,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int y_size = mxGetN(MAP_IN);
     double* map = mxGetPr(MAP_IN);
     
-    mexPrintf("x_size: %d, y_size: %d\n", x_size, y_size);
+    // mexPrintf("x_size: %d, y_size: %d\n", x_size, y_size);
     
     /* get the dimensions of the robotpose and the robotpose itself*/     
     int robotpose_M = mxGetM(ROBOT_IN);
@@ -700,12 +700,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     float robotposeY = (float)robotposeV[1];
     float robotposeTheta = (float)robotposeV[2];
     
-    mexPrintf("robotposeX: %.2f, robotposeY: %.2f, robotposeTheta: %.2f\n", 
-              robotposeX, robotposeY, robotposeTheta);
+    // mexPrintf("robotposeX: %.2f, robotposeY: %.2f, robotposeTheta: %.2f\n", 
+    //           robotposeX, robotposeY, robotposeTheta);
     
-    mexPrintf("cost index: %.2f\n", GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
-    mexPrintf("cost index: %d\n", (int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
-    mexPrintf("robotpose cost: %.2f\n", map[(int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size)]);
+    // mexPrintf("cost index: %.2f\n", GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
+    // mexPrintf("cost index: %d\n", (int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
+    // mexPrintf("robotpose cost: %.2f\n", map[(int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size)]);
 //     for (int i = 1; i <= x_size; i++) {
 //         for (int j = 1; j <= y_size; j++) {
 //             mexPrintf("x = %d, y = %d, cost = %.2f\n", i, j, map[(int)GETMAPINDEX(i, j, x_size, y_size)]);
@@ -728,16 +728,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
     float goalposeY = (float)goalposeV[1];
     float goalposeTheta = (float)goalposeV[2];
     
-    mexPrintf("goalposeX: %.2f, goalposeY: %.2f, goalposeTheta: %.2f\n", 
-              goalposeX, goalposeY, goalposeTheta);
+    // mexPrintf("goalposeX: %.2f, goalposeY: %.2f, goalposeTheta: %.2f\n", 
+    //           goalposeX, goalposeY, goalposeTheta);
     
     double* epsilonV = mxGetPr(EPSILON_IN);
     float epsilon = (float)epsilonV[0];
-    mexPrintf("epsilon: %.2f\n", epsilon);
+    // mexPrintf("epsilon: %.2f\n", epsilon);
     
     double* timeV = mxGetPr(TIME_IN);
     float time = (float)timeV[0];
-    mexPrintf("time: %.2f\n", time);
+    // mexPrintf("time: %.2f\n", time);
     
     //call the planner
     double** plan = NULL;
@@ -752,7 +752,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
             numofDOFs, &plan, &planlength, &plancost,
             epsilon, time);
     
-    mexPrintf("planner returned plan of length = %d\n", planlength); 
+    // mexPrintf("planner returned plan of length = %d\n", planlength); 
     
     /* Create return values */
     if(planlength > 0) {

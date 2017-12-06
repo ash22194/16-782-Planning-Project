@@ -1,1 +1,1 @@
-mex plannerADA.cpp -I./usr/local/include/sbpl -L./usr/local/lib -lsbpl
+mex plannerADA.cpp -lsbpl

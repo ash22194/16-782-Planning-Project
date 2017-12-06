@@ -97,81 +97,44 @@ RY = @(cx) (sizeX+1-cx);
 CX = @(ry) (sizeX+1-ry);
 CY = @(rx) (rx);
 
-% locations wrt. cost map axes
-robotCurrentLocationC = [5 10];
-robotGoalC = [15.0 29.0];
-
-% locations wrt. robot axes
-robotCurrentLocation = [RX(robotCurrentLocationC(2)) RY(robotCurrentLocationC(1))];
-robotGoal = [RX(robotGoalC(2)) RY(robotGoalC(1))];
-
 % Assume an initial robot orientation
 initialOrientation = 0;
+
+% locations wrt. cost map axes
+robotCurrentLocationC = [5 10 initialOrientation];
+robotGoalC = [15.0 29.0 initialOrientation];
+
 % Define the current pose for robot motion [x y theta]
-robotCurrentPose = [robotCurrentLocation initialOrientation];
-robotGoalPose = [robotGoalC initialOrientation];
+robotCurrentPose = [RX(robotCurrentLocationC(2)) RY(robotCurrentLocationC(1)) initialOrientation];
+robotGoalPose = [RX(robotGoalC(2)) RY(robotGoalC(1)) initialOrientation];
+
 % Reset the current position of the simulated robot to the start of the path.
 robot.setRobotPose(robotCurrentPose);
 
-%%
-% Test planner.cpp
+sr = 10;
+C = round([robotCurrentLocationC(1) robotCurrentLocationC(2)]);
 
-% sr = 10;
-% C = round(robotCurrentLocationC(1,1:2));
-% X = [C(1)-sr C(1)+sr];
-% X(X < 1) = 1;
-% X(X > sizeX) = sizeX;
-% 
-% Y = [C(2)-sr C(2)+sr];
-% Y(Y < 1) = 1;
-% Y(Y > sizeY) = sizeY;
-% 
-% for i=X(1):1:X(2)
-%     for j=Y(1):1:Y(2)
-%         r = norm([i j] - C);
-%         if (r <= sr)
-%             curmap(i, j) = costmap(i, j);
-%         end
-%     end
-% end
-% % figure(3);
-% % image(255 - curmap);
-% % colormap(gray(256));
-% % axis image;
-% 
-% robotCurrentConfigC = [robotCurrentLocationC initialOrientation];
-% robotGoalConfigC = [robotGoalC initialOrientation];
-% 
-% % Run ADA
-% [pathADA, pathlengthADA, ~] = planner(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
-% pathcostADA = computeFinalCost(pathADA,curmap);
-% 
-% % Run CHOMP
-% obsmap = (curmap == 255);
-% eps = 4;
-% curmap_ = create_costmap_sqdist(~obsmap,eps);
-% maxcurmap = max(max(curmap_));
-% varcostmap = zeros(size(curmap));
-% varcostmap(~obsmap) = curmap(~obsmap);
-% varcostmap = varcostmap/255*maxcurmap;
-% curmapCHOMP = varcostmap + curmap_;
-% [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-% pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
-% 
-% % Run RRT
-% [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-% pathcostRRT = computeFinalCost(pathCHOMP,curmap);
-%     
-% pathR = zeros(size(pathC));
-% pathR(:,1) = RX(pathC(:,2));
-% pathR(:,2) = RY(pathC(:,1));
-% 
-% %%
-% % Display the path
-% % show(prm, 'Map', 'off', 'Roadmap', 'off');
-% f1 = figure(1);
-% plot(pathR(:,1), pathR(:,2),'k--d');
-% movegui(f1,'north');
+X = [C(1)-sr C(1)+sr];
+X(X < 1) = 1;
+X(X > sizeX) = sizeX;
+
+Y = [C(2)-sr C(2)+sr];
+Y(Y < 1) = 1;
+Y(Y > sizeY) = sizeY;
+
+for i=X(1):1:X(2)
+    for j=Y(1):1:Y(2)
+        r = norm([i j] - C);
+        if (r <= sr)
+            curmap(i, j) = costmap(i, j);
+        end
+    end
+end
+
+obsmap = (curmap == 255);
+eps = 4;
+curmap_ = create_costmap_sqdist(~obsmap,eps);
+maxcurmap = max(max(curmap_));
 
 %% Define the Path Following Controller
 % Based on the path defined above and a robot motion model, you need a path
@@ -203,7 +166,7 @@ controlRate = robotics.Rate(10);
 
 %%
 % Compute distance to the goal location
-distanceToGoal = norm(robotCurrentLocation - robotGoal);
+distanceToGoal = norm(robotCurrentLocationC(1:2) - robotGoalC(1:2));
 % Define a goal radius
 goalRadius = 0.1;
 
@@ -211,37 +174,55 @@ goalRadius = 0.1;
 % Drive the robot using the controller output on the given map until it
 % reaches the goal. The controller runs at 10 Hz.
 reset(controlRate);
-
+fexec = figure('Name','Execution');
+cm = imagesc(curmap); 
+colorbar;
+hold on;
 while (distanceToGoal > goalRadius)
 
     % Run ADA
-    [pathADA, pathlengthADA, ~] = plannerADA(curmap, robotCurrentPose, robotGoalPose, 1.0, 0.5);
+    [pathADA, pathlengthADA, ~] = plannerADA(curmap, round(robotCurrentLocationC), robotGoalC, 1.0, 0.5);
     pathcostADA = computeFinalCost(pathADA,curmap);
+    fprintf('ADA* : %f\n',pathcostADA);
     
     % Run CHOMP
     varcostmap = zeros(size(curmap));
     varcostmap(~obsmap) = curmap(~obsmap);
     varcostmap = varcostmap/255*maxcurmap;
     curmapCHOMP = varcostmap + curmap_;
-    [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, robotCurrentPose, robotGoalPose, 1.0, 0.5);
+    [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, robotCurrentLocationC, robotGoalC, 1.0, 0.5);
     pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
+    fprintf('CHOMP : %f\n',pathcostCHOMP);
     
     % Run RRT
-    [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, robotCurrentPose, robotGoalPose, 1.0, 0.5);
-    pathcostRRT = computeFinalCost(pathCHOMP,curmap);
+    [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, robotCurrentLocationC, robotGoalC, 1.0, 0.5);
+    pathcostRRT = computeFinalCost(pathRRT,curmap);
+    fprintf('RRT : %f\n',pathcostRRT);
     
-    costs = [pathcostADA, pathcostCHOMP,pathcostRRT];
+    costs = [pathcostADA, pathcostCHOMP, pathcostRRT];
     [~,i] = min(costs);
+    
     if (i==1)
-        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathADA,controller.LookaheadDistance);
+        indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathADA,controller.LookaheadDistance);
         pathC = pathADA(1:indexLookAhead,:);
+        fada = plot(pathADA(:,2),pathADA(:,1),'g');
+        fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'r');
+        frrt = plot(pathRRT(:,2),pathRRT(:,1),'r');
     elseif (i==2)
-        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathCHOMP,controller.LookaheadDistance);
+        indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathCHOMP,controller.LookaheadDistance);
         pathC = pathCHOMP(1:indexLookAhead,:);
+        fada = plot(pathADA(:,2),pathADA(:,1),'r');
+        fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'g');
+        frrt = plot(pathRRT(:,2),pathRRT(:,1),'r');
     else
-        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathRRT,controller.LookaheadDistance);        
+        indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathRRT,controller.LookaheadDistance);        
         pathC = pathRRT(1:indexLookAhead,:);
+        fada = plot(pathADA(:,2),pathADA(:,1),'r');
+        fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'r');
+        frrt = plot(pathRRT(:,2),pathRRT(:,1),'g');
     end
+    rc = scatter(robotCurrentLocationC(2),robotCurrentLocationC(1),20,'cyan','filled');
+    la = scatter(pathC(end,2),pathC(end,1),20,'black','filled');
     
     pathR = zeros(size(pathC));
     pathR(:,1) = RX(pathC(:,2));
@@ -265,7 +246,10 @@ while (distanceToGoal > goalRadius)
         robotCurrentPose = robot.getRobotPose;
 
         sr = 10;
-        C = round([CX(robotCurrentPose(1,2)) CY(robotCurrentPose(1,1))]);
+        robotCurrentLocationC = [CX(robotCurrentPose(1,2)) CY(robotCurrentPose(1,1)) robotCurrentPose(1,3)];
+        delete(rc);
+        rc = scatter(robotCurrentLocationC(2),robotCurrentLocationC(1),20,'cyan','filled');
+        C = round([robotCurrentLocationC(1) robotCurrentLocationC(2)]);
 
         X = [C(1)-sr C(1)+sr];
         X(X < 1) = 1;
@@ -283,20 +267,18 @@ while (distanceToGoal > goalRadius)
                 end
             end
         end
-        figure(3);
-        image(255 - curmap);
-        colormap(gray(256));
-        axis image;
-
+        delete(cm);
+        cm = imagesc(curmap);
+        
         % Re-compute the distance to the goal
         distanceToLookAhead = norm(robotCurrentPose(1:2) - lookAheadPoint);
-        distanceToGoal = norm(robotCurrentPose(1:2) - robotGoal);
+        distanceToGoal = norm(robotCurrentLocationC(1:2) - robotGoalC(1:2));
         waitfor(controlRate);
         if (distanceToGoal < goalRadius)
             break;
         end
     end
-    distanceToGoal = norm(robotCurrentPose(1:2) - robotGoal);
+    distanceToGoal = norm(robotCurrentLocationC(1:2) - robotGoalC(1:2));
         
 end
 %%
