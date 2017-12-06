@@ -140,28 +140,30 @@ end
 
 robotCurrentConfigC = [robotCurrentLocationC initialOrientation];
 robotGoalConfigC = [robotGoalC initialOrientation];
-% obsmap = (curmap == 255);
-% varcostmap = zeros(size(curmap));
-% varcostmap(~obsmap) = curmap(~obsmap);
-% eps = 4;
-% curmap_ = create_costmap_sqdist(~obsmap,eps);
-% maxcurmap = max(max(curmap_));
-% varcostmap = varcostmap/255*maxcurmap;
-% curmapCHOMP = varcostmap + curmap_;
-% [pathC, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
 
-[pathADA, pathlength, pathcost] = planner(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
+% Run ADA
+[pathADA, pathlengthADA, ~] = planner(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
+pathcostADA = computeFinalCost(pathADA,curmap);
 
+% Run CHOMP
+obsmap = (curmap == 255);
+eps = 4;
+curmap_ = create_costmap_sqdist(~obsmap,eps);
+maxcurmap = max(max(curmap_));
+varcostmap = zeros(size(curmap));
+varcostmap(~obsmap) = curmap(~obsmap);
+varcostmap = varcostmap/255*maxcurmap;
+curmapCHOMP = varcostmap + curmap_;
+[pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
+
+% Run RRT
+[pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+pathcostRRT = computeFinalCost(pathCHOMP,curmap);
+    
 pathR = zeros(size(pathC));
 pathR(:,1) = RX(pathC(:,2));
 pathR(:,2) = RY(pathC(:,1));
-
-pathRADA = zeros(size(pathADA));
-pathRADA(:,1) = RX(pathADA(:,2));
-pathRADA(:,2) = RY(pathADA(:,1));
-
-hold on;
-plot(pathRADA(:,1),pathRADA(:,2),'r');
 
 %%
 % Display the path
@@ -210,14 +212,11 @@ goalRadius = 0.1;
 % Drive the robot using the controller output on the given map until it
 % reaches the goal. The controller runs at 10 Hz.
 reset(controlRate);
-obsmap = (curmap == 255);
-eps = 4;
-curmap_ = create_costmap_sqdist(~obsmap,eps);
-maxcurmap = max(max(curmap_));
+
 
 while (distanceToGoal > goalRadius)
 
-    while( distanceToGoal > goalRadius )
+    while( distanceToLookAhead > goalRadius )
 
         % Compute the controller outputs, i.e., the inputs to the robot
         [v, omega] = controller(robot.getRobotPose);
