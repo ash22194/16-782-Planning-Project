@@ -5,6 +5,7 @@
 #include <limits.h>
 #include <string>
 #include "any_rrt_star.h"
+#include <algorithm>
 
 /***********************    ANYTIME RRT STAR NODE   ***************************/
 
@@ -219,9 +220,9 @@ Anytime_RRT_Star_Node* Anytime_RRT_Star_Graph::choose_parent(Anytime_RRT_Star_No
 			dlist.push_back(INT_MAX);
 		}
 	}
-
-	double min_cost = *std::min_element(dlist.begin(), dlist.end());
-	int index = find(dlist.begin(), dlist.end(), min_cost) - dlist.begin();
+	std::vector<double>::iterator dlistmin = std::min_element(dlist.begin(), dlist.end());
+	double min_cost = *(dlistmin);
+	int index = std::find(dlist.begin(), dlist.end(), min_cost) - dlist.begin();
 	int min_ind = near_ids.at(index);
 
 	if (min_cost == INT_MAX){

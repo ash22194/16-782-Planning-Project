@@ -109,68 +109,69 @@ robotGoal = [RX(robotGoalC(2)) RY(robotGoalC(1))];
 initialOrientation = 0;
 % Define the current pose for robot motion [x y theta]
 robotCurrentPose = [robotCurrentLocation initialOrientation];
+robotGoalPose = [robotGoalC initialOrientation];
 % Reset the current position of the simulated robot to the start of the path.
 robot.setRobotPose(robotCurrentPose);
 
 %%
 % Test planner.cpp
 
-sr = 10;
-C = round(robotCurrentLocationC(1,1:2));
-X = [C(1)-sr C(1)+sr];
-X(X < 1) = 1;
-X(X > sizeX) = sizeX;
-
-Y = [C(2)-sr C(2)+sr];
-Y(Y < 1) = 1;
-Y(Y > sizeY) = sizeY;
-
-for i=X(1):1:X(2)
-    for j=Y(1):1:Y(2)
-        r = norm([i j] - C);
-        if (r <= sr)
-            curmap(i, j) = costmap(i, j);
-        end
-    end
-end
-% figure(3);
-% image(255 - curmap);
-% colormap(gray(256));
-% axis image;
-
-robotCurrentConfigC = [robotCurrentLocationC initialOrientation];
-robotGoalConfigC = [robotGoalC initialOrientation];
-
-% Run ADA
-[pathADA, pathlengthADA, ~] = planner(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
-pathcostADA = computeFinalCost(pathADA,curmap);
-
-% Run CHOMP
-obsmap = (curmap == 255);
-eps = 4;
-curmap_ = create_costmap_sqdist(~obsmap,eps);
-maxcurmap = max(max(curmap_));
-varcostmap = zeros(size(curmap));
-varcostmap(~obsmap) = curmap(~obsmap);
-varcostmap = varcostmap/255*maxcurmap;
-curmapCHOMP = varcostmap + curmap_;
-[pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
-
-% Run RRT
-[pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-pathcostRRT = computeFinalCost(pathCHOMP,curmap);
-    
-pathR = zeros(size(pathC));
-pathR(:,1) = RX(pathC(:,2));
-pathR(:,2) = RY(pathC(:,1));
-
-%%
-% Display the path
-% show(prm, 'Map', 'off', 'Roadmap', 'off');
-f1 = figure(1);
-plot(pathR(:,1), pathR(:,2),'k--d');
-movegui(f1,'north');
+% sr = 10;
+% C = round(robotCurrentLocationC(1,1:2));
+% X = [C(1)-sr C(1)+sr];
+% X(X < 1) = 1;
+% X(X > sizeX) = sizeX;
+% 
+% Y = [C(2)-sr C(2)+sr];
+% Y(Y < 1) = 1;
+% Y(Y > sizeY) = sizeY;
+% 
+% for i=X(1):1:X(2)
+%     for j=Y(1):1:Y(2)
+%         r = norm([i j] - C);
+%         if (r <= sr)
+%             curmap(i, j) = costmap(i, j);
+%         end
+%     end
+% end
+% % figure(3);
+% % image(255 - curmap);
+% % colormap(gray(256));
+% % axis image;
+% 
+% robotCurrentConfigC = [robotCurrentLocationC initialOrientation];
+% robotGoalConfigC = [robotGoalC initialOrientation];
+% 
+% % Run ADA
+% [pathADA, pathlengthADA, ~] = planner(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
+% pathcostADA = computeFinalCost(pathADA,curmap);
+% 
+% % Run CHOMP
+% obsmap = (curmap == 255);
+% eps = 4;
+% curmap_ = create_costmap_sqdist(~obsmap,eps);
+% maxcurmap = max(max(curmap_));
+% varcostmap = zeros(size(curmap));
+% varcostmap(~obsmap) = curmap(~obsmap);
+% varcostmap = varcostmap/255*maxcurmap;
+% curmapCHOMP = varcostmap + curmap_;
+% [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+% pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
+% 
+% % Run RRT
+% [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+% pathcostRRT = computeFinalCost(pathCHOMP,curmap);
+%     
+% pathR = zeros(size(pathC));
+% pathR(:,1) = RX(pathC(:,2));
+% pathR(:,2) = RY(pathC(:,1));
+% 
+% %%
+% % Display the path
+% % show(prm, 'Map', 'off', 'Roadmap', 'off');
+% f1 = figure(1);
+% plot(pathR(:,1), pathR(:,2),'k--d');
+% movegui(f1,'north');
 
 %% Define the Path Following Controller
 % Based on the path defined above and a robot motion model, you need a path
@@ -188,7 +189,7 @@ controller.MaxAngularVelocity = deg2rad(114.592);
 % lookahead distance is large. In contrast, a small lookahead distance can
 % result in an unstable path following behavior. A value of 0.5 m was chosen
 % for this example.
-controller.LookaheadDistance = 3;
+controller.LookaheadDistance = 5;
 % The |<docid:robotics_ref.buoofp1-1 controller>| object computes control commands for the robot.
 % Drive the robot using these control commands until it reaches within the
 % goal radius. If you are using an external simulator or a physical robot,
@@ -199,8 +200,6 @@ controlRate = robotics.Rate(10);
 % for computing the control commands of a robot on this map. To
 % re-use the controller and redefine the waypoints while keeping the other
 % information the same, use the |<docid:robotics_ref.bvl2d0a-1 release>| function.
-release(controller);
-controller.Waypoints = pathR;
 
 %%
 % Compute distance to the goal location
@@ -213,9 +212,47 @@ goalRadius = 0.1;
 % reaches the goal. The controller runs at 10 Hz.
 reset(controlRate);
 
-
 while (distanceToGoal > goalRadius)
 
+    % Run ADA
+    [pathADA, pathlengthADA, ~] = plannerADA(curmap, robotCurrentPose, robotGoalPose, 1.0, 0.5);
+    pathcostADA = computeFinalCost(pathADA,curmap);
+    
+    % Run CHOMP
+    varcostmap = zeros(size(curmap));
+    varcostmap(~obsmap) = curmap(~obsmap);
+    varcostmap = varcostmap/255*maxcurmap;
+    curmapCHOMP = varcostmap + curmap_;
+    [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, robotCurrentPose, robotGoalPose, 1.0, 0.5);
+    pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
+    
+    % Run RRT
+    [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, robotCurrentPose, robotGoalPose, 1.0, 0.5);
+    pathcostRRT = computeFinalCost(pathCHOMP,curmap);
+    
+    costs = [pathcostADA, pathcostCHOMP,pathcostRRT];
+    [~,i] = min(costs);
+    if (i==1)
+        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathADA,controller.LookaheadDistance);
+        pathC = pathADA(1:indexLookAhead,:);
+    elseif (i==2)
+        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathCHOMP,controller.LookaheadDistance);
+        pathC = pathCHOMP(1:indexLookAhead,:);
+    else
+        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathRRT,controller.LookaheadDistance);        
+        pathC = pathRRT(1:indexLookAhead,:);
+    end
+    
+    pathR = zeros(size(pathC));
+    pathR(:,1) = RX(pathC(:,2));
+    pathR(:,2) = RY(pathC(:,1));
+    lookAheadPoint = pathR(end,:);
+    robotCurrentPose = robot.getRobotPose;
+    distanceToLookAhead = norm(robotCurrentPose(1:2) - lookAheadPoint);
+    release(controller);
+    controller.Waypoints = pathR;
+    robot.setRobotPose(robotCurrentPose);
+    
     while( distanceToLookAhead > goalRadius )
 
         % Compute the controller outputs, i.e., the inputs to the robot
@@ -252,40 +289,15 @@ while (distanceToGoal > goalRadius)
         axis image;
 
         % Re-compute the distance to the goal
+        distanceToLookAhead = norm(robotCurrentPose(1:2) - lookAheadPoint);
         distanceToGoal = norm(robotCurrentPose(1:2) - robotGoal);
-
         waitfor(controlRate);
+        if (distanceToGoal < goalRadius)
+            break;
+        end
     end
-    
-    % Run ADA
-    [pathADA, pathlengthADA, ~] = plannerADA(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-    pathcostADA = computeFinalCost(pathADA,curmap);
-    
-    % Run CHOMP
-    varcostmap = zeros(size(curmap));
-    varcostmap(~obsmap) = curmap(~obsmap);
-    varcostmap = varcostmap/255*maxcurmap;
-    curmapCHOMP = varcostmap + curmap_;
-    [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-    pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
-    
-    % Run RRT
-    [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-    pathcostRRT = computeFinalCost(pathCHOMP,curmap);
-    
-    costs = [pathcostADA, pathcostCHOMP,pathcostRRT];
-    [~,i] = min(costs);
-    if (i==1)
-        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathADA,controller.LookaheadDistance);
-        path = pathADA(1:indexLookAhead,:);
-    elseif (i==2)
-        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathCHOMP,controller.LookaheadDistance);
-        path = pathCHOMP(1:indexLookAhead,:);
-    else
-        indexLookAhead = computeLookAheadPoint(robot.getRobotPose,pathRRT,controller.LookaheadDistance);        
-        path = pathRRT(1:indexLookAhead,:);
-    end
-    
+    distanceToGoal = norm(robotCurrentPose(1:2) - robotGoal);
+        
 end
 %%
 % The simulated robot has reached the goal location using the path following
