@@ -142,10 +142,10 @@ robotCurrentConfigC = [robotCurrentLocationC initialOrientation];
 robotGoalConfigC = [robotGoalC initialOrientation];
 
 % Run ADA
-[pathADA, pathlengthADA, ~] = planner(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
+[pathADA, pathlengthADA, ~] = plannerADA(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
 pathcostADA = computeFinalCost(pathADA,curmap);
-
-% Run CHOMP
+ 
+ % Run CHOMP
 obsmap = (curmap == 255);
 eps = 4;
 curmap_ = create_costmap_sqdist(~obsmap,eps);
@@ -159,7 +159,7 @@ pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
 
 % Run RRT
 [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-pathcostRRT = computeFinalCost(pathCHOMP,curmap);
+pathcostRRT = computeFinalCost(pathRRT,curmap);
     
 pathR = zeros(size(pathC));
 pathR(:,1) = RX(pathC(:,2));
