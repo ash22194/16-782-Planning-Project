@@ -140,17 +140,16 @@ end
 
 robotCurrentConfigC = [robotCurrentLocationC initialOrientation];
 robotGoalConfigC = [robotGoalC initialOrientation];
-obsmap = (curmap == 255);
-varcostmap = zeros(size(curmap));
-varcostmap(~obsmap) = curmap(~obsmap);
-eps = 4;
-curmap_ = create_costmap_sqdist(~obsmap,eps);
-maxcurmap = max(max(curmap_));
-varcostmap = varcostmap/255*maxcurmap;
-curmapCHOMP = varcostmap + curmap_;
-[pathC, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-% hold on;
-% plot(pathCHOMP(:,1),pathCHOMP(:,2),'r');
+% obsmap = (curmap == 255);
+% varcostmap = zeros(size(curmap));
+% varcostmap(~obsmap) = curmap(~obsmap);
+% eps = 4;
+% curmap_ = create_costmap_sqdist(~obsmap,eps);
+% maxcurmap = max(max(curmap_));
+% varcostmap = varcostmap/255*maxcurmap;
+% curmapCHOMP = varcostmap + curmap_;
+% [pathC, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+
 [pathADA, pathlength, pathcost] = planner(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
 
 pathR = zeros(size(pathC));
@@ -222,55 +221,56 @@ while( distanceToGoal > goalRadius )
     % Extract current location information from the current pose
     robotCurrentPose = robot.getRobotPose;
     
-%     sr = 10;
-%     C = round([CX(robotCurrentPose(1,2)) CY(robotCurrentPose(1,1))]);
-%     
-%     X = [C(1)-sr C(1)+sr];
-%     X(X < 1) = 1;
-%     X(X > sizeX) = sizeX;
-%     
-%     Y = [C(2)-sr C(2)+sr];
-%     Y(Y < 1) = 1;
-%     Y(Y > sizeY) = sizeY;
-%     
-%     for i=X(1):1:X(2)
-%         for j=Y(1):1:Y(2)
-%             r = norm([i j] - C);
-%             if (r <= sr)
-%                 curmap(i, j) = costmap(i, j);
-%             end
-%         end
-%     end
-%     figure(3);
-%     image(255 - curmap);
-%     colormap(gray(256));
-%     axis image;
-%     % Run ADA
-%     [pathADA, pathlengthADA, pathcostADA] = plannerADA(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-%     
-%     % Run CHOMP
-%     obsmap = (curmap == 255);
-%     varcostmap = zeros(size(curmap));
-%     varcostmap(~obsmap) = curmap(~obsmap);
-%     eps = 4;
-%     curmap_ = create_costmap_sqdist(~obsmap,eps);
-%     maxcurmap = max(max(curmap_));
-%     varcostmap = varcostmap/255*maxcurmap;
-%     curmapCHOMP = varcostmap + curmap_;
-%     [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-%     pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
-%     
-%     % Run RRT
-%     %[pathRRT, pathlengthRRT, pathcostRRT] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
-%     
-%     costs = [pathcostADA, pathcostCHOMP,pathcostRRT];
-%     [~,i] = min(costs);
-%     if (i==1)
-%         
-%     elseif (i==2)
-%         
-%     else
-%     end
+    sr = 10;
+    C = round([CX(robotCurrentPose(1,2)) CY(robotCurrentPose(1,1))]);
+    
+    X = [C(1)-sr C(1)+sr];
+    X(X < 1) = 1;
+    X(X > sizeX) = sizeX;
+    
+    Y = [C(2)-sr C(2)+sr];
+    Y(Y < 1) = 1;
+    Y(Y > sizeY) = sizeY;
+    
+    for i=X(1):1:X(2)
+        for j=Y(1):1:Y(2)
+            r = norm([i j] - C);
+            if (r <= sr)
+                curmap(i, j) = costmap(i, j);
+            end
+        end
+    end
+    figure(3);
+    image(255 - curmap);
+    colormap(gray(256));
+    axis image;
+    % Run ADA
+    [pathADA, pathlengthADA, pathcostADA] = plannerADA(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+    
+    % Run CHOMP
+    obsmap = (curmap == 255);
+    varcostmap = zeros(size(curmap));
+    varcostmap(~obsmap) = curmap(~obsmap);
+    eps = 4;
+    curmap_ = create_costmap_sqdist(~obsmap,eps);
+    maxcurmap = max(max(curmap_));
+    varcostmap = varcostmap/255*maxcurmap;
+    curmapCHOMP = varcostmap + curmap_;
+    [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+    pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
+    
+    % Run RRT
+    %[pathRRT, pathlengthRRT, pathcostRRT] = plannerRRT(curmap, [C robotCurrentPose(1,3)], robotGoalConfigC, 1.0, 0.5);
+    
+    costs = [pathcostADA, pathcostCHOMP,pathcostRRT];
+    [~,i] = min(costs);
+    if (i==1)
+        
+    elseif (i==2)
+        
+    else
+        
+    end
     
     % Re-compute the distance to the goal
     distanceToGoal = norm(robotCurrentPose(1:2) - robotGoal);
