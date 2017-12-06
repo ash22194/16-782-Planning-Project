@@ -175,11 +175,14 @@ goalRadius = 0.1;
 % reaches the goal. The controller runs at 10 Hz.
 reset(controlRate);
 fexec = figure('Name','Execution');
-cm = imagesc(curmap); 
-colorbar;
-hold on;
-while (distanceToGoal > goalRadius)
 
+while (distanceToGoal > goalRadius)
+    
+    figure(fexec);
+    cm = imagesc(curmap);
+    colorbar();
+    hold on;
+    
     % Run ADA
     [pathADA, pathlengthADA, ~] = plannerADA(curmap, round(robotCurrentLocationC), robotGoalC, 1.0, 0.5);
     pathcostADA = computeFinalCost(pathADA,curmap);
@@ -205,20 +208,29 @@ while (distanceToGoal > goalRadius)
     if (i==1)
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathADA,controller.LookaheadDistance);
         pathC = pathADA(1:indexLookAhead,:);
+        figure(fexec);
         fada = plot(pathADA(:,2),pathADA(:,1),'g');
+        figure(fexec);
         fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'r');
+        figure(fexec);
         frrt = plot(pathRRT(:,2),pathRRT(:,1),'r');
     elseif (i==2)
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathCHOMP,controller.LookaheadDistance);
         pathC = pathCHOMP(1:indexLookAhead,:);
+        figure(fexec);
         fada = plot(pathADA(:,2),pathADA(:,1),'r');
+        figure(fexec);
         fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'g');
+        figure(fexec);
         frrt = plot(pathRRT(:,2),pathRRT(:,1),'r');
     else
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathRRT,controller.LookaheadDistance);        
         pathC = pathRRT(1:indexLookAhead,:);
+        figure(fexec);
         fada = plot(pathADA(:,2),pathADA(:,1),'r');
+        figure(fexec);
         fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'r');
+        figure(fexec);
         frrt = plot(pathRRT(:,2),pathRRT(:,1),'g');
     end
     rc = scatter(robotCurrentLocationC(2),robotCurrentLocationC(1),20,'cyan','filled');
@@ -248,7 +260,12 @@ while (distanceToGoal > goalRadius)
         sr = 10;
         robotCurrentLocationC = [CX(robotCurrentPose(1,2)) CY(robotCurrentPose(1,1)) robotCurrentPose(1,3)];
         delete(rc);
+        figure(fexec);
         rc = scatter(robotCurrentLocationC(2),robotCurrentLocationC(1),20,'cyan','filled');
+        
+       % delete(cm);
+%         figure(fexec);
+%         cm = imagesc(curmap);
         C = round([robotCurrentLocationC(1) robotCurrentLocationC(2)]);
 
         X = [C(1)-sr C(1)+sr];
@@ -267,8 +284,6 @@ while (distanceToGoal > goalRadius)
                 end
             end
         end
-        delete(cm);
-        cm = imagesc(curmap);
         
         % Re-compute the distance to the goal
         distanceToLookAhead = norm(robotCurrentPose(1:2) - lookAheadPoint);
@@ -279,7 +294,9 @@ while (distanceToGoal > goalRadius)
         end
     end
     distanceToGoal = norm(robotCurrentLocationC(1:2) - robotGoalC(1:2));
-        
+    delete(fada);
+    delete(fchomp);
+    delete(frrt);
 end
 %%
 % The simulated robot has reached the goal location using the path following
