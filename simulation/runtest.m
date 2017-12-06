@@ -202,7 +202,8 @@ while (distanceToGoal > goalRadius)
     pathcostRRT = computeFinalCost(pathRRT,curmap);
     fprintf('RRT : %f\n',pathcostRRT);
     
-    costs = [pathcostADA, pathcostCHOMP, pathcostRRT];
+    %costs = [pathcostADA, pathcostCHOMP, pathcostRRT];
+    costs = [inf, pathcostCHOMP, inf];
     [~,i] = min(costs);
     
     if (i==1)
@@ -217,12 +218,12 @@ while (distanceToGoal > goalRadius)
     elseif (i==2)
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathCHOMP,controller.LookaheadDistance);
         pathC = pathCHOMP(1:indexLookAhead,:);
-        figure(fexec);
-        fada = plot(pathADA(:,2),pathADA(:,1),'r');
+%         figure(fexec);
+%         fada = plot(pathADA(:,2),pathADA(:,1),'r');
         figure(fexec);
         fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'g');
-        figure(fexec);
-        frrt = plot(pathRRT(:,2),pathRRT(:,1),'r');
+%         figure(fexec);
+%         frrt = plot(pathRRT(:,2),pathRRT(:,1),'r');
     else
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathRRT,controller.LookaheadDistance);        
         pathC = pathRRT(1:indexLookAhead,:);
@@ -294,9 +295,9 @@ while (distanceToGoal > goalRadius)
         end
     end
     distanceToGoal = norm(robotCurrentLocationC(1:2) - robotGoalC(1:2));
-    delete(fada);
+    %delete(fada);
     delete(fchomp);
-    delete(frrt);
+%     delete(frrt);
 end
 %%
 % The simulated robot has reached the goal location using the path following
