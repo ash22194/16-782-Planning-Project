@@ -102,7 +102,7 @@ static void planner(double*	map, int x_size, int y_size,
 
     int N = 50;
     float lambda = 100;
-    int maxIter = 100;
+    int maxIter = 100000;
     int minIter = 1;
     CHOMP::chompOpt options(minIter, maxIter, lambda, time);
 
