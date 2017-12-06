@@ -141,7 +141,7 @@ axis image;
 
 robotCurrentConfigC = [robotCurrentLocationC initialOrientation];
 robotGoalConfigC = [robotGoalC initialOrientation];
-[pathC, pathlength, pathcost] = planner(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
+[pathC, pathlength, pathcost] = plannerADA(curmap, robotCurrentConfigC, robotGoalConfigC, 1.0, 0.5);
 
 pathR = zeros(size(pathC));
 pathR(:,1) = RX(pathC(:,2));
