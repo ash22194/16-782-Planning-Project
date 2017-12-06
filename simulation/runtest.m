@@ -31,13 +31,21 @@
 
 close all;
 envmap = load('data/map5.txt');
+
+robotRadius = 1;
+[sizeX, sizeY] = size(envmap);
+% inflate the boundary
+% envmap(robotRadius,:) = 255;
+% envmap(sizeX-robotRadius+1,:) = 255;
+% envmap(:, robotRadius) = 255;
+% envmap(:,sizeY-robotRadius+1) = 255;
+
 costmap = envmap;
 
 envmap(envmap<255) = 0;
 bogmap = robotics.BinaryOccupancyGrid(envmap);
 bogmap2 = robotics.BinaryOccupancyGrid(envmap);
 
-robotRadius = 1;
 robot = RobotSimulator(bogmap);
 robot.enableLaser(false);
 robot.setRobotSize(robotRadius);
@@ -54,7 +62,6 @@ costmap(bogmat) = 255;
 % axis image;
 % movegui(f2,'northwest');
 
-[sizeX, sizeY] = size(costmap);
 curmap = zeros(sizeX, sizeY);
 curmap(bogmat) = 255;
 
@@ -102,7 +109,7 @@ initialOrientation = 0;
 
 % locations wrt. cost map axes
 robotCurrentLocationC = [5 10 initialOrientation];
-robotGoalC = [15.0 29.0 initialOrientation];
+robotGoalC = [15.0 25.0 initialOrientation];
 
 % Define the current pose for robot motion [x y theta]
 robotCurrentPose = [RX(robotCurrentLocationC(2)) RY(robotCurrentLocationC(1)) initialOrientation];
@@ -180,6 +187,10 @@ movegui(fexec,'north');
 % move robot simulator figure to the top left corner
 movegui(1,'northwest');
 
+%
+totalcost = 0;
+totaltime = 0;
+
 while (distanceToGoal > goalRadius)
     
     f1 = figure(fexec);
@@ -187,8 +198,10 @@ while (distanceToGoal > goalRadius)
     colorbar();
     hold on;
     
+    tStart = tic; 
     % Run ADA
     [pathADA, pathlengthADA, ~] = plannerADA(curmap, round(robotCurrentLocationC), robotGoalC, 1.0, 0.5);
+    tElapsedADA = toc(tStart);
     pathcostADA = computeFinalCost(pathADA,curmap);
     fprintf('ADA* : %f\n',pathcostADA);
     
@@ -197,16 +210,23 @@ while (distanceToGoal > goalRadius)
     varcostmap(~obsmap) = curmap(~obsmap);
     varcostmap = varcostmap/255*maxcurmap;
     curmapCHOMP = varcostmap + curmap_;
+    tStart = tic; 
     [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, robotCurrentLocationC, robotGoalC, 1.0, 0.5);
+    tElapsedCHOMP = toc(tStart);
     pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
     fprintf('CHOMP : %f\n',pathcostCHOMP);
     
     % Run RRT
     [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, robotCurrentLocationC, robotGoalC, 1.0, 0.5);
+    tStart = tic;
     pathcostRRT = computeFinalCost(pathRRT,curmap);
+    tElapsedRRT = toc(tStart);
     fprintf('RRT : %f\n',pathcostRRT);
     
-    costs = [pathcostADA, pathcostCHOMP, pathcostRRT];
+%     costs = [pathcostADA, pathcostCHOMP, pathcostRRT];
+%     costs = [pathcostADA, inf, inf];
+    costs = [inf, pathcostCHOMP, inf];
+%     costs = [inf, inf, pathcostRRT];
     [~,i] = min(costs);
     
     if (i==1)
@@ -218,6 +238,8 @@ while (distanceToGoal > goalRadius)
         fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'r');
         figure(fexec);
         frrt = plot(pathRRT(:,2),pathRRT(:,1),'r');
+        
+        tElapsed = tElapsedADA;
     elseif (i==2)
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathCHOMP,controller.LookaheadDistance);
         pathC = pathCHOMP(1:indexLookAhead,:);
@@ -227,6 +249,8 @@ while (distanceToGoal > goalRadius)
         fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'g');
         figure(fexec);
         frrt = plot(pathRRT(:,2),pathRRT(:,1),'r');
+        
+        tElapsed = tElapsedCHOMP;
     else
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathRRT,controller.LookaheadDistance);        
         pathC = pathRRT(1:indexLookAhead,:);
@@ -236,7 +260,14 @@ while (distanceToGoal > goalRadius)
         fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'r');
         figure(fexec);
         frrt = plot(pathRRT(:,2),pathRRT(:,1),'g');
+        
+        tElapsed = tElapsedRRT;
     end
+    
+    % keep track of the total cost
+    totalcost = totalcost + computeFinalCost(pathC,curmap)
+    totaltime = totaltime + tElapsed
+    
     rc = scatter(robotCurrentLocationC(2),robotCurrentLocationC(1),20,'cyan','filled');
     la = scatter(pathC(end,2),pathC(end,1),20,'black','filled');
     
