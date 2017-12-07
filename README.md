@@ -11,24 +11,16 @@ In this code we have 3 planners.
 All planners are implemented in C++ and the visualizations are in MATLAB. The ADA\* implementation is a modified version of the one found in [SBPL](https://github.com/sbpl/sbpl).
 
 # Requirements
-## CHOMP
+
 1) [Armadillo-8.300.1](http://arma.sourceforge.net/download.html)\*
 2) [LAPACK-3.8](http://www.netlib.org/lapack/#_lapack_version_3_8_0_2)\*
+3) [SBPL](https://github.com/sbpl/sbpl) \*
 
 *provided in the repository.
-
-## ADA*
-1) [SBPL](https://github.com/sbpl/sbpl) \*
-
-*provided in the repository.
-
-## RRT*
-1) Self contained
 
 # Compiling requirements
-## CHOMP
-### Armadillo
-In the Armadillo directory
+## Armadillo
+In the Armadillo (CHOMP/armadillo-8.300.0) directory
 
 ```
 mkdir build && cd build
@@ -37,8 +29,8 @@ make -j
 sudo make install
 ```
 
-### Lapack
-In the Lapack directory
+## Lapack
+In the Lapack directory (CHOMP/lapack-3.8.0)
 
 ```
 mkdir build && cd build
@@ -58,4 +50,22 @@ Add the following lines to your .bashrc or .envrc (if you are using direnv) file
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6:/usr/lib/x86_64-linux-gnu/libprotobuf.so.9
 export BLAS_VERSION="/usr/lib/libblas.so"
 export LAPACK_VERSION="/usr/lib/liblapack.so"
+```
+
+## SBPL
+In the SBPL directory (ADA/sbpl-master)
+
+```
+mkdir build && cd build
+cmake ..
+make -j
+sudo make install
+```
+
+# Compiling the code
+Call the following functions in the MATLAB terminal (in the given order) after setting the working directory to simulation
+
+```
+addToPath()
+compile()
 ```
