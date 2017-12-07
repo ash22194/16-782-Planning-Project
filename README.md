@@ -30,13 +30,15 @@ All planners are implemented in C++ and the visualizations are in MATLAB. The AD
 ### Armadillo
 In the Armadillo directory
 
-`mkdir build && cd build
+```
+mkdir build && cd build
 
 cmake ..
 
 make -j
 
-sudo make install`
+sudo make install
+```
 
 ### Lapack
 In the Lapack directory
