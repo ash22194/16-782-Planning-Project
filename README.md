@@ -8,7 +8,8 @@ In this code we have 3 planners.
 3) [RRT\*](http://www.roboticsproceedings.org/rss06/p34.pdf)
 
 # Implementation
-All planners are implemented in C++ and the visualizations are in MATLAB. The ADA\* implementation is a modified version of the one found in [SBPL](https://github.com/sbpl/sbpl).
+All planners are implemented in C++ and the visualizations are in MATLAB. 
+The ADA\* implementation is a modified version of the one found in [SBPL](https://github.com/sbpl/sbpl).
 
 # Requirements
 
