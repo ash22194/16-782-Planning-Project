@@ -108,7 +108,7 @@ CY = @(rx) (rx);
 initialOrientation = 0;
 
 % locations wrt. cost map axes
-robotCurrentLocationC = [28 5 initialOrientation];
+robotCurrentLocationC = [5 10 initialOrientation];
 robotGoalC = [15.0 29.0 initialOrientation];
 
 % Define the current pose for robot motion [x y theta]
@@ -231,31 +231,33 @@ while (distanceToGoal > goalRadius)
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathADA,controller.LookaheadDistance);
         pathC = pathADA(1:indexLookAhead,:);
         figure(fexec);
-        fada = plot(pathADA(:,2),pathADA(:,1),'g');
+        fada = plot(pathADA(:,2),pathADA(:,1),'g','LineWidth',2);
         figure(fexec);
-        fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'r');
+        fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'r','LineWidth',2);
         figure(fexec);
-        frrt = plot(pathRRT(:,2),pathRRT(:,1),'r');
+        frrt = plot(pathRRT(:,2),pathRRT(:,1),'r','LineWidth',2);
         
         tElapsed = tElapsedADA;
     elseif (i==2)
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathCHOMP,controller.LookaheadDistance);
         pathC = pathCHOMP(1:indexLookAhead,:);
         figure(fexec);
-        fada = plot(pathADA(:,2),pathADA(:,1),'r');
+        fada = plot(pathADA(:,2),pathADA(:,1),'r','LineWidth',2);
         figure(fexec);
-        fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'g');        
+        fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'g','LineWidth',2);
+        figure(fexec);
+        frrt = plot(pathRRT(:,2),pathRRT(:,1),'r','LineWidth',2);
         tElapsed = tElapsedCHOMP;
 
     else
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathRRT,controller.LookaheadDistance);        
         pathC = pathRRT(1:indexLookAhead,:);
         figure(fexec);
-        fada = plot(pathADA(:,2),pathADA(:,1),'r');
+        fada = plot(pathADA(:,2),pathADA(:,1),'r','LineWidth',2);
         figure(fexec);
-        fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'r');
+        fchomp = plot(pathCHOMP(:,2),pathCHOMP(:,1),'r','LineWidth',2);
         figure(fexec);
-        frrt = plot(pathRRT(:,2),pathRRT(:,1),'g');
+        frrt = plot(pathRRT(:,2),pathRRT(:,1),'g','LineWidth',2);
         
         tElapsed = tElapsedRRT;
     end
@@ -264,8 +266,8 @@ while (distanceToGoal > goalRadius)
     totalcost = totalcost + computeFinalCost(pathC,curmap)
     totaltime = totaltime + tElapsed
     
-    rc = scatter(robotCurrentLocationC(2),robotCurrentLocationC(1),20,'cyan','filled');
-    la = scatter(pathC(end,2),pathC(end,1),20,'black','filled');
+    rc = scatter(robotCurrentLocationC(2),robotCurrentLocationC(1),40,'cyan','filled');
+    la = scatter(pathC(end,2),pathC(end,1),40,'black','filled');
     
     pathR = zeros(size(pathC));
     pathR(:,1) = RX(pathC(:,2));
@@ -292,7 +294,7 @@ while (distanceToGoal > goalRadius)
         robotCurrentLocationC = [CX(robotCurrentPose(1,2)) CY(robotCurrentPose(1,1)) robotCurrentPose(1,3)];
         delete(rc);
         figure(fexec);
-        rc = scatter(robotCurrentLocationC(2),robotCurrentLocationC(1),20,'cyan','filled');
+        rc = scatter(robotCurrentLocationC(2),robotCurrentLocationC(1),40,'cyan','filled');
         
        % delete(cm);
 %         figure(fexec);

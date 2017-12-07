@@ -237,9 +237,9 @@ Anytime_RRT_Star_Node* Anytime_RRT_Star_Graph::choose_parent(Anytime_RRT_Star_No
 bool Anytime_RRT_Star_Graph::no_collision_check_extend(Anytime_RRT_Star_Node* near_node, double theta, double d){
 	Anytime_RRT_Star_Node* temp_node = new Anytime_RRT_Star_Node(near_node);
 
-	for (int i = 0; i < int(d / epsilon); i++){
-		temp_node->x += epsilon * cos(theta);
-		temp_node->y += epsilon * sin(theta);
+	for (int i = 0; i < (10*int(d / epsilon)); i++){
+		temp_node->x += epsilon * cos(theta)/10.0;
+		temp_node->y += epsilon * sin(theta)/10.0;
 		if (no_collision_check(temp_node) == false){
 			// cout << "false" << endl;
 			return false;

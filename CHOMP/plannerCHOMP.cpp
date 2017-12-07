@@ -110,7 +110,7 @@ static void planner(double*	map, int x_size, int y_size,
         goal(1) = (y_size-1);
     }
 
-    int N = 50;
+    int N = 70;
     float lambda = 100;
     int maxIter = 100000;
     int minIter = 1;
