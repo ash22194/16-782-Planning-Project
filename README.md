@@ -54,7 +54,8 @@ sudo make install
 
 Add the following lines to your .bashrc or .envrc (if you are using direnv) file
 
-```export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6:/usr/lib/x86_64-linux-gnu/libprotobuf.so.9
+```
+export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6:/usr/lib/x86_64-linux-gnu/libprotobuf.so.9
 export BLAS_VERSION="/usr/lib/libblas.so"
 export LAPACK_VERSION="/usr/lib/liblapack.so"
 ```
