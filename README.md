@@ -64,7 +64,7 @@ sudo make install
 ```
 
 # Compiling the code
-Call the following functions in the MATLAB terminal (in the given order) after setting the working directory to simulation
+Call the following functions in the MATLAB terminal (in the given order) after setting the working directory to **simulation**
 
 ```
 addToPath()
