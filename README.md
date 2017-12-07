@@ -71,4 +71,8 @@ compile()
 ```
 
 # Running the code
-Run runtest.m
+Run the following file
+
+```
+runtest.m
+```
