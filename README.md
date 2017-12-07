@@ -22,3 +22,5 @@ All planners are implemented in C++ and the visualizations are in MATLAB. The AD
 1) Self contained
 
 # Compiling the planners
+## CHOMP
+### 
