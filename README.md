@@ -69,3 +69,6 @@ Call the following functions in the MATLAB terminal (in the given order) after s
 addToPath()
 compile()
 ```
+
+# Running the code
+Run runtest.m
