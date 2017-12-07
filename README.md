@@ -30,31 +30,31 @@ All planners are implemented in C++ and the visualizations are in MATLAB. The AD
 ### Armadillo
 In the Armadillo directory
 
-`mkdir build && cd build`
+`mkdir build && cd build
 
-`cmake ..`
+cmake ..
 
-`make -j`
+make -j
 
-`sudo make install`
+sudo make install`
 
 ### Lapack
 In the Lapack directory
 
-`mkdir build && cd build`
+`mkdir build && cd build
 
-`ccmake ..`
+ccmake ..`
 
 In the ccmake configuration, set CBLAS, LAPACKE, USE_OPTIMIZED_LAPACK and USE_OPTIMIZED_BLAS to ON
 
-`make -j`
+`make -j
 
-`sudo make install`
+sudo make install`
 
 Add the following lines to your .bashrc or .envrc (if you are using direnv) file
 
-`export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6:/usr/lib/x86_64-linux-gnu/libprotobuf.so.9`
+`export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6:/usr/lib/x86_64-linux-gnu/libprotobuf.so.9
 
-`export BLAS_VERSION="/usr/lib/libblas.so"`
+export BLAS_VERSION="/usr/lib/libblas.so"
 
-`export LAPACK_VERSION="/usr/lib/liblapack.so"`
+export LAPACK_VERSION="/usr/lib/liblapack.so"`
