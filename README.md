@@ -14,10 +14,12 @@ All planners are implemented in C++ and the visualizations are in MATLAB. The AD
 ## CHOMP
 1) [Armadillo-8.300.1](http://arma.sourceforge.net/download.html)\*
 2) [LAPACK-3.8](http://www.netlib.org/lapack/#_lapack_version_3_8_0_2)\*
+
 *provided in the repository.
 
 ## ADA*
 1) [SBPL](https://github.com/sbpl/sbpl) \*
+
 *provided in the repository.
 
 ## RRT*
