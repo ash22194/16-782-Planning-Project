@@ -38,7 +38,7 @@ mkdir build && cd build
 ccmake ..
 ```
 
-In the ccmake configuration, set CBLAS, LAPACKE, USE_OPTIMIZED_LAPACK and USE_OPTIMIZED_BLAS to ON
+In the ccmake configuration, set **CBLAS**, **LAPACKE**, **USE_OPTIMIZED_LAPACK** and **USE_OPTIMIZED_BLAS** to **ON**
 
 ```
 make -j
