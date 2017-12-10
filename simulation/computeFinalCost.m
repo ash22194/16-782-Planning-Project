@@ -7,10 +7,17 @@ function cost = computeFinalCost(path,map)
     gridpath(gridpath(:,2) == 0,2) = 1;
     gridpath(gridpath(:,2) > x_size,2) = x_size;
     path = [start;path];
+    dist = sqrt(sum(diff(path,1).^2,2));
     % Operating under the assumption that first column in path is column indices 
     % and the second column is row indices 
     sub = sub2ind(size(map),gridpath(:,1),gridpath(:,2));
     c = map(sub);
-    value = (1+c/255);
-    cost = sum(sqrt(sum(diff(path,1).^2,2)).*value);
+    blocked = sum(c==255)>0;
+    if (blocked)
+        cost = inf;
+    else
+        value = (1+c/255);
+        cost = sum(dist.*value);
+    end
+    
 end
