@@ -5,7 +5,6 @@
 #include <limits.h>
 #include <string>
 #include "any_rrt_star.h"
-#include <algorithm>
 
 /***********************    ANYTIME RRT STAR NODE   ***************************/
 
@@ -61,6 +60,7 @@ Anytime_RRT_Star_Graph::Anytime_RRT_Star_Graph(double* _map, float start_x, floa
 vector<pair<double, double> > Anytime_RRT_Star_Graph::planning(){
 	node_list.push_back(start);
 	for (int i=0; i<max_iterations; i++){
+		// cout << "i: " << i << " " << endl;
 		std::pair<double, double> random_point = sample();
 		// cout << random_point.first << " " << random_point.second << endl;
 
@@ -70,6 +70,7 @@ vector<pair<double, double> > Anytime_RRT_Star_Graph::planning(){
 
 		// cout << nearest_idx << endl;
 		Anytime_RRT_Star_Node* new_node = extend(random_point, nearest_idx);
+		// cout << new_node->toString() << endl;
 		// cout << "new node: " << new_node->toString() << endl;
 		if (no_collision_check(new_node) == true){
 			vector<int> near_ids = find_near_nodes(new_node);
@@ -150,12 +151,18 @@ int Anytime_RRT_Star_Graph::nearest_neighbor(vector<Anytime_RRT_Star_Node*> node
 
 Anytime_RRT_Star_Node* Anytime_RRT_Star_Graph::extend(std::pair<double, double> random_point, int nearest_idx){
 	Anytime_RRT_Star_Node* nearest_node = node_list.at(nearest_idx);
-	double theta = atan((random_point.second - nearest_node->y)/(random_point.first - nearest_node->x));
+	// Anytime_RRT_Star_Node* nearest_node = new Anytime_RRT_Star_Node(25, 10);
+	// double theta = atan((random_point.second - nearest_node->y)/(random_point.first - nearest_node->x));
+	// cout << theta << endl;
 	Anytime_RRT_Star_Node* new_node = new Anytime_RRT_Star_Node(nearest_node);
-	new_node->x += epsilon * cos(theta);
-	new_node->y += epsilon * sin(theta);
+	// new_node->x += epsilon * cos(theta);
+	// new_node->y += epsilon * sin(theta);
+	new_node->x += epsilon * (random_point.first - nearest_node->x)/sqrt((random_point.second - nearest_node->y)*(random_point.second - nearest_node->y) + (random_point.first - nearest_node->x)*(random_point.first - nearest_node->x));
+	new_node->y += epsilon * (random_point.second - nearest_node->y)/sqrt((random_point.second - nearest_node->y)*(random_point.second - nearest_node->y) + (random_point.first - nearest_node->x)*(random_point.first - nearest_node->x));
+	// cout << new_node->x << " " << new_node->y << endl;
 	
 	int state_cost = (int)map[(int)GETMAPINDEX(new_node->x, new_node->y, x_size, y_size)];
+	// cout << "state cost: " << state_cost << endl;
 	new_node->cost += epsilon + state_cost;
 	new_node->parent = nearest_idx;
 	return new_node;
@@ -173,7 +180,7 @@ bool Anytime_RRT_Star_Graph::no_collision_check(Anytime_RRT_Star_Node* new_node)
 	// }
 	// cout << map_index << endl;
 	// cout << map.at(map_index) << endl;
-	int map_val = (int)map[(int)GETMAPINDEX(new_node->x, new_node->y, x_size, y_size)];
+	int map_val = (int)map[(int)GETMAPINDEX((int)new_node->x, (int)new_node->y, x_size, y_size)];
 	// cout << new_node->x << " " << new_node->y << " "<< map_val << endl;
 	if ( map_val == 255){
 		return false;
@@ -209,20 +216,21 @@ Anytime_RRT_Star_Node* Anytime_RRT_Star_Graph::choose_parent(Anytime_RRT_Star_No
 	vector<double> dlist;
 	vector<int>::iterator it;
 	for (it = near_ids.begin(); it != near_ids.end(); ++it){
-		double dx = new_node->x - node_list.at(*it)->x;
-		double dy = new_node->y - node_list.at(*it)->y;
-		double d = sqrt(dx * dx + dy * dy);
-		double theta = atan(dy/dx);
-		int state_cost = (int)map[(int)GETMAPINDEX(new_node->x, new_node->y, x_size, y_size)];
-		if (no_collision_check_extend(node_list.at(*it), theta, d) == true){
+		// double dx = new_node->x - node_list.at(*it)->x;
+		// double dy = new_node->y - node_list.at(*it)->y;
+		// double d = sqrt(dx * dx + dy * dy);
+		// double theta = atan(dy/dx);
+		if (no_collision_check_extend(node_list.at(*it), new_node) == true){
+			double d = dist(node_list.at(*it), new_node);
+			int state_cost = (int)map[(int)GETMAPINDEX(new_node->x, new_node->y, x_size, y_size)];
 			dlist.push_back(node_list.at(*it)->cost + d + state_cost);
 		} else {
 			dlist.push_back(INT_MAX);
 		}
 	}
-	std::vector<double>::iterator dlistmin = std::min_element(dlist.begin(), dlist.end());
-	double min_cost = *(dlistmin);
-	int index = std::find(dlist.begin(), dlist.end(), min_cost) - dlist.begin();
+
+	double min_cost = *std::min_element(dlist.begin(), dlist.end());
+	int index = find(dlist.begin(), dlist.end(), min_cost) - dlist.begin();
 	int min_ind = near_ids.at(index);
 
 	if (min_cost == INT_MAX){
@@ -234,12 +242,13 @@ Anytime_RRT_Star_Node* Anytime_RRT_Star_Graph::choose_parent(Anytime_RRT_Star_No
 	return new_node;
 }
 
-bool Anytime_RRT_Star_Graph::no_collision_check_extend(Anytime_RRT_Star_Node* near_node, double theta, double d){
+bool Anytime_RRT_Star_Graph::no_collision_check_extend(Anytime_RRT_Star_Node* near_node, Anytime_RRT_Star_Node* reach_node){
 	Anytime_RRT_Star_Node* temp_node = new Anytime_RRT_Star_Node(near_node);
-
+	double d = dist(near_node, reach_node);
 	for (int i = 0; i < int(d / epsilon); i++){
-		temp_node->x += epsilon * cos(theta);
-		temp_node->y += epsilon * sin(theta);
+		temp_node->x += epsilon * (reach_node->x - near_node->x)/sqrt((near_node->x - reach_node->x)*(near_node->x - reach_node->x) + (near_node->y - reach_node->y)*(near_node->y - reach_node->y));
+		temp_node->y += epsilon * (reach_node->y - near_node->y)/sqrt((near_node->x - reach_node->x)*(near_node->x - reach_node->x) + (near_node->y - reach_node->y)*(near_node->y - reach_node->y));
+		// cout << "temp node: " << temp_node->x << " " << temp_node->y << endl;
 		if (no_collision_check(temp_node) == false){
 			// cout << "false" << endl;
 			return false;
@@ -255,15 +264,15 @@ void Anytime_RRT_Star_Graph::rewire(Anytime_RRT_Star_Node* new_node, vector<int>
 	for (it = near_ids.begin(); it != near_ids.end(); ++it){
 		// nearNode = self.nodeList[i]
 		Anytime_RRT_Star_Node* near_node = node_list.at(*it);
-		double dx = new_node->x - near_node->x;
-		double dy = new_node->y - near_node->y;
-		double d = sqrt(dx*dx + dy*dy);
+		// double dx = new_node->x - near_node->x;
+		// double dy = new_node->y - near_node->y;
+		double d = dist(new_node, near_node);
 
 		double scost = new_node->cost + d;
 
 		if (near_node->cost > scost){
-			double theta = atan(dy/dx);
-			if (no_collision_check_extend(near_node, theta, d) == true){
+			// double theta = atan(dy/dx);
+			if (no_collision_check_extend(near_node, new_node) == true){
 				near_node->parent = num_nodes - 1;
 				near_node->cost = scost;
 			}
@@ -293,24 +302,32 @@ int Anytime_RRT_Star_Graph::get_best_last_index(){
 		}
 		// }
 	}
+	if (min_cost > epsilon){
+		return -1;
+	}
 	total_cost = node_list.at(min_index)->cost + min_cost;
 	return min_index;
 }
 
-double Anytime_RRT_Star_Graph::calc_dist_to_goal(double x_val, double y_val){
-	return sqrt((x_val - goal->x)*(x_val - goal->x) + (y_val - goal->y)*(y_val - goal->y));
-}
-
 void Anytime_RRT_Star_Graph::gen_final_course(int index){
-	path.push_back(std::make_pair(goal->x, goal->y));
 	if (index == -1){
-		path.push_back(std::make_pair(start->x, start->y));
+		cout << "no path exists" << endl;
+		// path.push_back(std::make_pair(start->x, start->y));
 		return;	
 	}
+	path.push_back(std::make_pair(goal->x, goal->y));
 	while (node_list.at(index)->parent != -1){
 		Anytime_RRT_Star_Node* node = node_list.at(index);
 		path.push_back(std::make_pair(node->x, node->y));
 		index = node->parent;
 	}
 	path.push_back(std::make_pair(start->x, start->y));
+}
+
+double Anytime_RRT_Star_Graph::dist(Anytime_RRT_Star_Node* node1, Anytime_RRT_Star_Node* node2){
+	return sqrt((node1->x - node2->x)*(node1->x - node2->x) + (node1->y - node2->y)*(node1->y - node2->y));
+}
+
+double Anytime_RRT_Star_Graph::calc_dist_to_goal(double x_val, double y_val){
+	return sqrt((x_val - goal->x)*(x_val - goal->x) + (y_val - goal->y)*(y_val - goal->y));
 }

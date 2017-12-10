@@ -11,57 +11,93 @@
 #include "any_rrt_star.h"
 
 /* Input Arguments */
-#define	MAP_IN      prhs[0]
-#define	ROBOT_IN	prhs[1]
-#define	GOAL_IN     prhs[2]
-#define	EPSILON_IN  prhs[3]
-#define	TIME_IN     prhs[4]
+#define MAP_IN      prhs[0]
+#define ROBOT_IN    prhs[1]
+#define GOAL_IN     prhs[2]
+#define EPSILON_IN  prhs[3]
+#define TIME_IN     prhs[4]
 
 /* Output Arguments */
-#define	PLAN_OUT	plhs[0]
-#define	PLANLENGTH_OUT	plhs[1]
-#define	PLANCOST_OUT    plhs[2]
+#define PLAN_OUT    plhs[0]
+#define PLANLENGTH_OUT  plhs[1]
+#define PLANCOST_OUT    plhs[2]
 
 /*access to the map is shifted to account for 0-based indexing in the map, whereas
 1-based indexing in matlab (so, robotpose and goalpose are 1-indexed)*/
 // #define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y-1)*XSIZE + (X-1))
 
 #if !defined(MAX)
-#define	MAX(A, B)	((A) > (B) ? (A) : (B))
+#define MAX(A, B)   ((A) > (B) ? (A) : (B))
 #endif
 
 #if !defined(MIN)
-#define	MIN(A, B)	((A) < (B) ? (A) : (B))
+#define MIN(A, B)   ((A) < (B) ? (A) : (B))
 #endif
 
 int temp = 0;
 
-static void planner(double*	map, int x_size, int y_size,
+static void planner(double* map, int x_size, int y_size,
                     float robotposeX, float robotposeY, float robotposeTheta,
                     float goalposeX, float goalposeY, float goalposeTheta,
                     int numofDOFs, double*** plan, int* planlength, double* plancost,
                     float epsilon, float time)
 {   
-//     mexPrintf("temp = %d\n", temp);
+    // mexPrintf("temp = %d\n", temp);
     temp = temp+1;
     
-//     mexPrintf("robot: %.2f %.2f %.2f;\n", robotposeX, robotposeY, robotposeTheta);
-//     mexPrintf("goal: %.2f %.2f %.2f;\n", goalposeX, goalposeY, goalposeTheta);
+    // mexPrintf("robot: %.2f %.2f %.2f;\n", robotposeX, robotposeY, robotposeTheta);
+    // mexPrintf("goal: %.2f %.2f %.2f;\n", goalposeX, goalposeY, goalposeTheta);
     
     //interpolate between start and goal
     float goal_sample_rate = 0.2;
 
-	Anytime_RRT_Star_Graph* G = new Anytime_RRT_Star_Graph(map,  robotposeX,  robotposeY,  goalposeX,  goalposeY,
-    x_size, y_size, epsilon, goal_sample_rate, 10000, x_size, y_size);
+    Anytime_RRT_Star_Graph* G = new Anytime_RRT_Star_Graph(map,  robotposeX,  robotposeY,  goalposeX,  goalposeY,
+    1, x_size, epsilon, goal_sample_rate, 1000, x_size, y_size);
 
 
     /******** Collision working properly? ********/
-    // Anytime_RRT_Star_Node* near_node = new Anytime_RRT_Star_Node(15, 12);
-    // G->no_collision_check_extend(near_node, 4.71, 10);
+    // Anytime_RRT_Star_Node* near_node = new Anytime_RRT_Star_Node(10, 5);
+    // G->no_collision_check_extend(near_node, 1.57, 10);
     
     // cout << map[GETMAPINDEX(30, 0, 30, 30)] << endl;
     // cout << map[GETMAPINDEX(0, 30, 30, 30)] << endl;
+
+    // for (int i = 0; i <= 30; i++){
+    // for (int i = 1; i <= 30; i++){
+    //     for (int j = 1; j <= 30; j++){
+    //         int map_val = map[GETMAPINDEX(i, j, 30, 30)];
+    //         if (map_val < 1) map_val = 0;
+    //         // cout << map_val << "\t";
+    //         cout << i << ", " << j << ": " << map_val << endl;
+    //         // if (map_val < 1){
+    //         //     cout << "0\t";
+    //         // } else{
+    //         //     cout << map_val << "\t";
+    //         // }
+    //     }
+    //     cout << endl;
+    // }
+    // cout << endl;
     /******** Collision working properly? ********/
+    
+    /******** Extend working properly? ********/
+    // cout << "epsilon: " << epsilon << endl;
+    // std::pair<double,double> rand = std::make_pair(10,10);
+    // G->extend(rand,1);
+    /******** Extend working properly? ********/
+
+    /******** no_collision_check_extend working properly? ********/
+    // 15 30
+    // 15.0548 29.8302
+    // 15.362 28.8786
+    // 17.4076 18.7278
+    // 18.4511 12.5169
+    // 20 5
+    // Anytime_RRT_Star_Node* node1 = new Anytime_RRT_Star_Node(20, 5);
+    // Anytime_RRT_Star_Node* node2 = new Anytime_RRT_Star_Node(18.4511, 12.5169);
+    // // cout << G->dist(node1, node2) << endl;
+    // cout<<G->no_collision_check_extend(node1, node2) << endl;
+    /******** no_collision_check_extend working properly? ********/
 
     std::vector<std::pair<double, double> > path_vec (G->planning());
 
@@ -69,18 +105,20 @@ static void planner(double*	map, int x_size, int y_size,
     // for (vector<pair<double, double> >::iterator it = path_vec.begin(); it != path_vec.end(); ++it){
     //     cout << (*it).first << " " << (*it).second << endl;
     // }
+    // cout << endl;
 
     *planlength = path_vec.size();
     *plancost = G->total_cost;
 
     *plan = (double**) malloc(*planlength*sizeof(double*));
     for (int i = 0; i < *planlength; i++){
-        (*plan)[i] = (double*) malloc(2*sizeof(double)); 
+        (*plan)[i] = (double*) malloc(2*sizeof(double));
         (*plan)[i][0] = path_vec[*planlength - i - 1].first;
         (*plan)[i][1] = path_vec[*planlength - i - 1].second;
     }
 
-    // cout << *plancost;
+    // cout << G->node_list.size() << endl;
+    // cout << *plancost << endl;
     return;
 }
 
@@ -91,7 +129,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     /* Check for proper number of arguments */    
     if (nrhs != 5) { 
-	    mexErrMsgIdAndTxt( "MATLAB:planner:invalidNumInputs",
+        mexErrMsgIdAndTxt( "MATLAB:planner:invalidNumInputs",
                 "Five input arguments required."); 
     }
         
@@ -106,11 +144,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int robotpose_M = mxGetM(ROBOT_IN);
     int robotpose_N = mxGetN(ROBOT_IN);
     if(robotpose_M != 1 || robotpose_N != 3){
-	    mexErrMsgIdAndTxt( "MATLAB:planner:invalidrobotpose",
+        mexErrMsgIdAndTxt( "MATLAB:planner:invalidrobotpose",
                 "robotpose vector should be 1 by 3.");         
     }
     
-//     mexPrintf("robotpose_M: %d, robotpose_N: %d\n", robotpose_M, robotpose_N);
+    // mexPrintf("robotpose_M: %d, robotpose_N: %d\n", robotpose_M, robotpose_N);
     
     double* robotposeV = mxGetPr(ROBOT_IN);
     float robotposeX = (float)robotposeV[0];
@@ -120,12 +158,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     // mexPrintf("robotposeX: %.2f, robotposeY: %.2f, robotposeTheta: %.2f\n", 
               // robotposeX, robotposeY, robotposeTheta);
     
-//     mexPrintf("cost index: %.2f\n", GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
-//     mexPrintf("cost index: %d\n", (int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
-//     mexPrintf("robotpose cost: %.2f\n", map[(int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size)]);
+    // mexPrintf("cost index: %.2f\n", GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
+    // mexPrintf("cost index: %d\n", (int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
+    // mexPrintf("robotpose cost: %.2f\n", map[(int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size)]);
 //     for (int i = 1; i <= x_size; i++) {
 //         for (int j = 1; j <= y_size; j++) {
-//             mexPrintf("x = %d, y = %d, cost = %.2f\n", i, j, map[(int)GETMAPINDEX(i, j, x_size, y_size)]);
+            // mexPrintf("x = %d, y = %d, cost = %.2f\n", i, j, map[(int)GETMAPINDEX(i, j, x_size, y_size)]);
 //             
 //         }
 //     }
@@ -134,11 +172,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int goalpose_M = mxGetM(GOAL_IN);
     int goalpose_N = mxGetN(GOAL_IN);
     if(goalpose_M != 1 || goalpose_N != 3){
-	    mexErrMsgIdAndTxt( "MATLAB:planner:invalidgoalpose",
+        mexErrMsgIdAndTxt( "MATLAB:planner:invalidgoalpose",
                 "goalpose vector should be 1 by 3.");         
     }
     
-//     mexPrintf("goalpose_M: %d, goalpose_N: %d\n", goalpose_M, goalpose_N);
+    // mexPrintf("goalpose_M: %d, goalpose_N: %d\n", goalpose_M, goalpose_N);
     
     double* goalposeV = mxGetPr(GOAL_IN);
     float goalposeX = (float)goalposeV[0];
@@ -146,7 +184,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     float goalposeTheta = (float)goalposeV[2];
     
     // mexPrintf("goalposeX: %.2f, goalposeY: %.2f, goalposeTheta: %.2f\n", 
-    //           goalposeX, goalposeY, goalposeTheta);
+              // goalposeX, goalposeY, goalposeTheta);
     
     double* epsilonV = mxGetPr(EPSILON_IN);
     float epsilon = (float)epsilonV[0];
