@@ -5,7 +5,8 @@
 
 using namespace std;
 
-#define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((X-1)*XSIZE + (Y-1))
+#define GETMAPINDEX(X, Y, XSIZE, YSIZE) ((Y-1)*XSIZE + (X-1))
+#define PI 3.14159265359
 
 class Anytime_RRT_Star_Node;
 class Anytime_RRT_Star_Graph;
@@ -53,9 +54,10 @@ public:
 	bool no_collision_check(Anytime_RRT_Star_Node*);
 	vector<int> find_near_nodes(Anytime_RRT_Star_Node*);
 	Anytime_RRT_Star_Node* choose_parent(Anytime_RRT_Star_Node*, vector<int>);
-	bool no_collision_check_extend(Anytime_RRT_Star_Node*, double, double);
+	bool no_collision_check_extend(Anytime_RRT_Star_Node*, Anytime_RRT_Star_Node*);
 	void rewire(Anytime_RRT_Star_Node*, vector<int>);
 	int get_best_last_index();
 	double calc_dist_to_goal(double, double);
 	void gen_final_course(int);
+	double dist(Anytime_RRT_Star_Node*, Anytime_RRT_Star_Node*);
 };
