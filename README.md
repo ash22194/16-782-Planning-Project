@@ -13,15 +13,17 @@ The ADA\* implementation is a modified version of the one found in [SBPL](https:
 
 # Requirements
 
-1) [Armadillo-8.300.1](http://arma.sourceforge.net/download.html)\*
-2) [LAPACK-3.8](http://www.netlib.org/lapack/#_lapack_version_3_8_0_2)\*
+1) [Armadillo-8.300.1](http://arma.sourceforge.net/download.html)
+2) [LAPACK-3.8](http://www.netlib.org/lapack/#_lapack_version_3_8_0_2)
 3) [SBPL](https://github.com/sbpl/sbpl) \*
 
 *provided in the repository.
 
 # Compiling requirements
 ## Armadillo
-In the Armadillo (CHOMP/armadillo-8.300.0) directory
+Download [Armadillo-8.300.1](http://arma.sourceforge.net/download.html) and extract the armadillo-8.300.1 directory in the CHOMP directory
+
+In the Armadillo (CHOMP/armadillo-8.300.1) directory
 
 ```
 mkdir build && cd build
@@ -31,9 +33,12 @@ sudo make install
 ```
 
 ## Lapack
+Download [LAPACK-3.8](http://www.netlib.org/lapack/#_lapack_version_3_8_0_2) and extract the lapack-3.8.0 directory in the CHOMP directory
+
 In the Lapack directory (CHOMP/lapack-3.8.0)
 
 ```
+mv make.inc.example make.inc
 mkdir build && cd build
 ccmake ..
 ```
