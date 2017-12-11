@@ -1,6 +1,5 @@
 ADA/sbpl-master/build/
-CHOMP/armadillo-8.300.0/build/
-CHOMP/lapack-3.8.0/build/
+CHOMP/armadillo-8.300.0/
+CHOMP/lapack-3.8.0/
 .envrc
-*.txt
 dump.m
