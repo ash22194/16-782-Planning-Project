@@ -49,7 +49,6 @@ ccmake ..
 In the ccmake configuration, set the following flags to **ON** 
 
 **CBLAS** 
-
 **LAPACKE**
 
 **USE_OPTIMIZED_LAPACK**
