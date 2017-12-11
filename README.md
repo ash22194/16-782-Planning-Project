@@ -18,7 +18,7 @@ The ADA\* implementation is a modified version of the one found in [SBPL](https:
 3) [LAPACK-3.8](http://www.netlib.org/lapack/#_lapack_version_3_8_0_2)
 4) [SBPL](https://github.com/sbpl/sbpl) <sup>[2](#sbpl)</sup>
 
-<a name="matlab">1</a>:PurePursuit controller in Robotics Control toolkit required which is unavailable in earlier versions of MATLAB.
+<a name="matlab">1</a>:The code requires PurePursuit controller in the Robotics Control toolkit, which is unavailable in versions of MATLAB earlier than 2017a.
 
 <a name="sbpl">2</a>:Provided in the repository.
 
