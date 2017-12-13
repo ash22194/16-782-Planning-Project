@@ -60,7 +60,7 @@ static void planner(double*	map, int x_size, int y_size,
                     float robotposeX, float robotposeY, float robotposeTheta,
                     float goalposeX, float goalposeY, float goalposeTheta,
                     int numofDOFs, double*** plan, int* planlength, double* plancost,
-                    float epsilon, float time)
+                    float epsilon, float timeLimit)
 {   
     // printMap(map,x_size,y_size);
     // std::cout<<"Size : "<<x_size<<","<<y_size<<std::endl;
@@ -110,11 +110,11 @@ static void planner(double*	map, int x_size, int y_size,
         goal(1) = (y_size-1);
     }
 
-    int N = 1000;
+    int N = 100;
     float lambda = 100;
     int maxIter = 100000;
     int minIter = 1;
-    CHOMP::chompOpt options(minIter, maxIter, lambda, time);
+    CHOMP::chompOpt options(minIter, maxIter, lambda, timeLimit);
 
     arma::mat traj;
     arma::mat optimizedTraj;

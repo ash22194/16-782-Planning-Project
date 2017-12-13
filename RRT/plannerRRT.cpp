@@ -55,7 +55,7 @@ static void planner(double* map, int x_size, int y_size,
     float goal_sample_rate = 0.2;
 
     Anytime_RRT_Star_Graph* G = new Anytime_RRT_Star_Graph(map,  robotposeX,  robotposeY,  goalposeX,  goalposeY,
-    1, x_size, epsilon, goal_sample_rate, 10000, x_size, y_size);
+    1, x_size, epsilon, goal_sample_rate, 1000, x_size, y_size);
 
 
     /******** Collision working properly? ********/
@@ -103,10 +103,10 @@ static void planner(double* map, int x_size, int y_size,
     /******** no_collision_check_extend working properly? ********/
 
     std::vector<std::pair<double, double> > path_vec (G->planning());
-    while((G->found_goal == false) && (plan_time < time)){
-        path_vec = G->planning();
-        plan_time = float( clock () - begin_time ) /  CLOCKS_PER_SEC;
-    }
+//     while((G->found_goal == false) && (plan_time < time)){
+//         path_vec = G->planning();
+//         plan_time = float( clock () - begin_time ) /  CLOCKS_PER_SEC;
+//     }
     if (G->found_goal == false){
         cout << "RRT: no path found";
     }

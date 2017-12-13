@@ -30,7 +30,7 @@
 %% Start Robot Simulator with a simple map
 
 close all;
-envmap = load('data/map7.txt');
+envmap = load('data/map5.txt');
 
 robotRadius = 1;
 [sizeX, sizeY] = size(envmap);
@@ -109,9 +109,10 @@ initialOrientation = 0;
 
 % locations wrt. cost map axes
 % robotCurrentLocationC = [5 10 initialOrientation];
-% robotGoalC = [15.0 29.0 initialOrientation];
-robotCurrentLocationC = [50 25 initialOrientation];
-robotGoalC = [225 225 initialOrientation];
+robotCurrentLocationC = [20 5 initialOrientation];
+robotGoalC = [15.0 29.0 initialOrientation];
+% robotCurrentLocationC = [50 20 initialOrientation];
+% robotGoalC = [225 225 initialOrientation];
 
 
 % Define the current pose for robot motion [x y theta]
@@ -142,7 +143,7 @@ for i=X(1):1:X(2)
 end
 
 obsmap = (curmap == 255);
-eps = 20;
+eps = 4;
 curmap_ = create_costmap_sqdist(~obsmap,eps);
 maxcurmap = max(max(curmap_));
 
@@ -162,7 +163,7 @@ controller.MaxAngularVelocity = deg2rad(114.592);
 % lookahead distance is large. In contrast, a small lookahead distance can
 % result in an unstable path following behavior. A value of 0.5 m was chosen
 % for this example.
-controller.LookaheadDistance = 5;
+controller.LookaheadDistance = 6;
 % The |<docid:robotics_ref.buoofp1-1 controller>| object computes control commands for the robot.
 % Drive the robot using these control commands until it reaches within the
 % goal radius. If you are using an external simulator or a physical robot,
@@ -178,7 +179,7 @@ controlRate = robotics.Rate(10);
 % Compute distance to the goal location
 distanceToGoal = norm(robotCurrentLocationC(1:2) - robotGoalC(1:2));
 % Define a goal radius
-goalRadius = 0.1;
+goalRadius = 0.25;
 
 %%
 % Drive the robot using the controller output on the given map until it
@@ -194,6 +195,8 @@ movegui(1,'northwest');
 totalcost = 0;
 totaltime = 0;
 
+timeLimit = 0.5;
+
 while (distanceToGoal > goalRadius)
     
     f1 = figure(fexec);
@@ -203,7 +206,7 @@ while (distanceToGoal > goalRadius)
     
     tStart = tic; 
     % Run ADA
-    [pathADA, pathlengthADA, ~] = plannerADA(curmap, round(robotCurrentLocationC), robotGoalC, 1.0, 0.5);
+    [pathADA, pathlengthADA, ~] = plannerADA(curmap, round(robotCurrentLocationC), robotGoalC, 1.0, timeLimit);
 %     pathADA =[1 1; 2 2];
 %     pathlengthADA = 0;
     tElapsedADA = toc(tStart);
@@ -216,15 +219,15 @@ while (distanceToGoal > goalRadius)
     varcostmap = varcostmap/255*maxcurmap;
     curmapCHOMP = varcostmap + curmap_;
     tStart = tic; 
-    [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, robotCurrentLocationC, robotGoalC, 1.0, 0.5);
+    [pathCHOMP, pathlengthCHOMP, ~] = plannerCHOMP(curmapCHOMP, robotCurrentLocationC, robotGoalC, 1.0, timeLimit);
     tElapsedCHOMP = toc(tStart);
     pathcostCHOMP = computeFinalCost(pathCHOMP,curmap);
     fprintf('CHOMP : %f\n',pathcostCHOMP);
     
     % Run RRT
-%     [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, robotCurrentLocationC, robotGoalC, 1.0, 0.5);
-    pathRRT =[1 1; 2 2];
-    pathlengthRRT = 0;
+    [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, robotCurrentLocationC, robotGoalC, 1.0, timeLimit);
+%     pathRRT =[1 1; 2 2];
+%     pathlengthRRT = 0;
     tStart = tic;
     pathcostRRT = computeFinalCost(pathRRT,curmap);
     tElapsedRRT = toc(tStart);
@@ -232,11 +235,12 @@ while (distanceToGoal > goalRadius)
     
     costs = [pathcostADA, pathcostCHOMP, pathcostRRT];
 %     costs = [inf, pathcostCHOMP, inf];
+%       costs = [inf, inf, pathcostRRT];
 %     costs = [pathcostADA, inf, inf];
     [~,i] = min(costs);
-    
+%     i = 1;
     if (i==1)
-        indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathADA,controller.LookaheadDistance);
+        indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathADA,sr/2);
         pathC = pathADA(1:indexLookAhead,:);
         figure(fexec);
         fada = plot(pathADA(:,2),pathADA(:,1),'g','LineWidth',2);
@@ -303,7 +307,6 @@ while (distanceToGoal > goalRadius)
         % Extract current location information from the current pose
         robotCurrentPose = robot.getRobotPose;
 
-        sr = 10;
         robotCurrentLocationC = [CX(robotCurrentPose(1,2)) CY(robotCurrentPose(1,1)) robotCurrentPose(1,3)];
         delete(rc);
         figure(fexec);

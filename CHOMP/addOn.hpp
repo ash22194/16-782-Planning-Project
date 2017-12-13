@@ -336,7 +336,7 @@ void chompIterate(arma::mat traj, arma::mat& optTraj, double* finalCost, map& co
             break;
 		}
 
-		// std::cout<<"Iteratoin : "<<count<<", "<<cost<<std::endl;
+		//std::cout<<"Iteration : "<<count<<", "<<cost<<std::endl;
 
 		gradientFinal(traj,start,A,b,costMap,costMapx,costMapy,options.lambda,grad);
 		traj = traj - options.stepSize(count)*Minv*grad;

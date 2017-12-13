@@ -192,10 +192,10 @@ bool Anytime_RRT_Star_Graph::no_collision_check(Anytime_RRT_Star_Node* new_node)
 
 vector<int> Anytime_RRT_Star_Graph::find_near_nodes(Anytime_RRT_Star_Node* new_node){
 	int num_nodes = node_list.size();
-	int radius = 25.0 * sqrt((log(num_nodes)+1 / num_nodes));
+	int radius = 5.0 * sqrt((log(num_nodes)+1 / num_nodes));
 	vector<int> near_ids;
 	
-	// cout << radius << endl;
+	// cout << radius25.0 << endl;
 	vector<Anytime_RRT_Star_Node*>::iterator it;
 	for (it = node_list.begin(); it != node_list.end(); ++it){
 		// cout << (*it)->toString() << endl << new_node->toString() << endl;
@@ -247,9 +247,10 @@ Anytime_RRT_Star_Node* Anytime_RRT_Star_Graph::choose_parent(Anytime_RRT_Star_No
 bool Anytime_RRT_Star_Graph::no_collision_check_extend(Anytime_RRT_Star_Node* near_node, Anytime_RRT_Star_Node* reach_node){
 	Anytime_RRT_Star_Node* temp_node = new Anytime_RRT_Star_Node(near_node);
 	double d = dist(near_node, reach_node);
-	for (int i = 0; i < int(d / epsilon); i++){
-		temp_node->x += epsilon * (reach_node->x - near_node->x)/sqrt((near_node->x - reach_node->x)*(near_node->x - reach_node->x) + (near_node->y - reach_node->y)*(near_node->y - reach_node->y));
-		temp_node->y += epsilon * (reach_node->y - near_node->y)/sqrt((near_node->x - reach_node->x)*(near_node->x - reach_node->x) + (near_node->y - reach_node->y)*(near_node->y - reach_node->y));
+    float new_epsilon = epsilon;
+	for (int i = 0; i < int(d / new_epsilon); i++){
+		temp_node->x += new_epsilon * (reach_node->x - near_node->x)/sqrt((near_node->x - reach_node->x)*(near_node->x - reach_node->x) + (near_node->y - reach_node->y)*(near_node->y - reach_node->y));
+		temp_node->y += new_epsilon * (reach_node->y - near_node->y)/sqrt((near_node->x - reach_node->x)*(near_node->x - reach_node->x) + (near_node->y - reach_node->y)*(near_node->y - reach_node->y));
 		// cout << "temp node: " << temp_node->x << " " << temp_node->y << endl;
 		if (no_collision_check(temp_node) == false){
 			// cout << "false" << endl;
@@ -269,8 +270,8 @@ void Anytime_RRT_Star_Graph::rewire(Anytime_RRT_Star_Node* new_node, vector<int>
 		// double dx = new_node->x - near_node->x;
 		// double dy = new_node->y - near_node->y;
 		double d = dist(new_node, near_node);
-
-		double scost = new_node->cost + d;
+        int state_cost = (int)map[(int)GETMAPINDEX(new_node->x, new_node->y, x_size, y_size)];
+		double scost = new_node->cost + d + state_cost;
 
 		if (near_node->cost > scost){
 			// double theta = atan(dy/dx);
