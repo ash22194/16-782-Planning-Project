@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <ctime>
 #include "any_rrt_star.h"
 
 /* Input Arguments */
@@ -42,6 +43,8 @@ static void planner(double* map, int x_size, int y_size,
                     int numofDOFs, double*** plan, int* planlength, double* plancost,
                     float epsilon, float time)
 {   
+    const clock_t begin_time = clock();
+    float plan_time = float( clock () - begin_time ) /  CLOCKS_PER_SEC;
     // mexPrintf("temp = %d\n", temp);
     temp = temp+1;
     
@@ -100,6 +103,13 @@ static void planner(double* map, int x_size, int y_size,
     /******** no_collision_check_extend working properly? ********/
 
     std::vector<std::pair<double, double> > path_vec (G->planning());
+    while((G->found_goal == false) && (plan_time < time)){
+        path_vec = G->planning();
+        plan_time = float( clock () - begin_time ) /  CLOCKS_PER_SEC;
+    }
+    if (G->found_goal == false){
+        cout << "RRT: no path found";
+    }
 
     // cout << "Final Path: " << endl;
     // for (vector<pair<double, double> >::iterator it = path_vec.begin(); it != path_vec.end(); ++it){

@@ -41,6 +41,7 @@ class Anytime_RRT_Star_Graph{
 	vector<Anytime_RRT_Star_Node*> node_list;
 public:
 	double total_cost;
+	bool found_goal;
 
 	Anytime_RRT_Star_Graph(double*, float, float, float, float,
 	float, float, float, float, int, int, int);

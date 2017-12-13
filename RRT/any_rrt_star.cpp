@@ -51,6 +51,7 @@ Anytime_RRT_Star_Graph::Anytime_RRT_Star_Graph(double* _map, float start_x, floa
 	x_size = _x_size;
 	y_size = _y_size;
 	map = _map;
+	found_goal = false;
 	// for (int i=0; i<_map.size(); i++)
  //        map.push_back(_map[i]);
 	// path = NULL;
@@ -191,7 +192,7 @@ bool Anytime_RRT_Star_Graph::no_collision_check(Anytime_RRT_Star_Node* new_node)
 
 vector<int> Anytime_RRT_Star_Graph::find_near_nodes(Anytime_RRT_Star_Node* new_node){
 	int num_nodes = node_list.size();
-	int radius = 50.0 * sqrt((log(num_nodes)+1 / num_nodes));
+	int radius = 25.0 * sqrt((log(num_nodes)+1 / num_nodes));
 	vector<int> near_ids;
 	
 	// cout << radius << endl;
@@ -312,7 +313,8 @@ int Anytime_RRT_Star_Graph::get_best_last_index(){
 
 void Anytime_RRT_Star_Graph::gen_final_course(int index){
 	if (index == -1){
-		cout << "no path exists" << endl;
+		// cout << "no path exists" << endl;
+		found_goal = false;
 		// path.push_back(std::make_pair(start->x, start->y));
 		return;	
 	}
@@ -323,6 +325,7 @@ void Anytime_RRT_Star_Graph::gen_final_course(int index){
 		index = node->parent;
 	}
 	path.push_back(std::make_pair(start->x, start->y));
+	found_goal = true;
 }
 
 double Anytime_RRT_Star_Graph::dist(Anytime_RRT_Star_Node* node1, Anytime_RRT_Star_Node* node2){
