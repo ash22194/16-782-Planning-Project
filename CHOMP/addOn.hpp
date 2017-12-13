@@ -332,7 +332,8 @@ void chompIterate(arma::mat traj, arma::mat& optTraj, double* finalCost, map& co
 		fsec fs = t1-t0;
 		ms d = std::chrono::duration_cast<ms>(fs);
 		if ((((float)d.count())/1000 > options.etc) && (count > 1)) {
-			break;
+			std::cout << "Time Out (CHOMP)!" << std::endl;
+            break;
 		}
 
 		// std::cout<<"Iteratoin : "<<count<<", "<<cost<<std::endl;

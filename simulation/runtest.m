@@ -30,7 +30,7 @@
 %% Start Robot Simulator with a simple map
 
 close all;
-envmap = load('data/map5.txt');
+envmap = load('data/map7.txt');
 
 robotRadius = 1;
 [sizeX, sizeY] = size(envmap);
@@ -108,8 +108,11 @@ CY = @(rx) (rx);
 initialOrientation = 0;
 
 % locations wrt. cost map axes
-robotCurrentLocationC = [5 10 initialOrientation];
-robotGoalC = [15.0 29.0 initialOrientation];
+% robotCurrentLocationC = [5 10 initialOrientation];
+% robotGoalC = [15.0 29.0 initialOrientation];
+robotCurrentLocationC = [50 25 initialOrientation];
+robotGoalC = [225 225 initialOrientation];
+
 
 % Define the current pose for robot motion [x y theta]
 robotCurrentPose = [RX(robotCurrentLocationC(2)) RY(robotCurrentLocationC(1)) initialOrientation];
@@ -139,7 +142,7 @@ for i=X(1):1:X(2)
 end
 
 obsmap = (curmap == 255);
-eps = 4;
+eps = 20;
 curmap_ = create_costmap_sqdist(~obsmap,eps);
 maxcurmap = max(max(curmap_));
 
@@ -201,6 +204,8 @@ while (distanceToGoal > goalRadius)
     tStart = tic; 
     % Run ADA
     [pathADA, pathlengthADA, ~] = plannerADA(curmap, round(robotCurrentLocationC), robotGoalC, 1.0, 0.5);
+%     pathADA =[1 1; 2 2];
+%     pathlengthADA = 0;
     tElapsedADA = toc(tStart);
     pathcostADA = computeFinalCost(pathADA,curmap);
     fprintf('ADA* : %f\n',pathcostADA);
@@ -217,14 +222,17 @@ while (distanceToGoal > goalRadius)
     fprintf('CHOMP : %f\n',pathcostCHOMP);
     
     % Run RRT
-    [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, robotCurrentLocationC, robotGoalC, 1.0, 0.5);
+%     [pathRRT, pathlengthRRT, ~] = plannerRRT(curmap, robotCurrentLocationC, robotGoalC, 1.0, 0.5);
+    pathRRT =[1 1; 2 2];
+    pathlengthRRT = 0;
     tStart = tic;
     pathcostRRT = computeFinalCost(pathRRT,curmap);
     tElapsedRRT = toc(tStart);
     fprintf('RRT : %f\n',pathcostRRT);
     
     costs = [pathcostADA, pathcostCHOMP, pathcostRRT];
-    %costs = [inf, pathcostCHOMP, inf];
+%     costs = [inf, pathcostCHOMP, inf];
+%     costs = [pathcostADA, inf, inf];
     [~,i] = min(costs);
     
     if (i==1)
@@ -238,6 +246,8 @@ while (distanceToGoal > goalRadius)
         frrt = plot(pathRRT(:,2),pathRRT(:,1),'r','LineWidth',2);
         
         tElapsed = tElapsedADA;
+        
+        fprintf("ADA is picked!");
     elseif (i==2)
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathCHOMP,controller.LookaheadDistance);
         pathC = pathCHOMP(1:indexLookAhead,:);
@@ -248,7 +258,8 @@ while (distanceToGoal > goalRadius)
         figure(fexec);
         frrt = plot(pathRRT(:,2),pathRRT(:,1),'r','LineWidth',2);
         tElapsed = tElapsedCHOMP;
-
+        
+        fprintf("CHOMP is picked!");
     else
         indexLookAhead = computeLookAheadPoint(robotCurrentLocationC,pathRRT,controller.LookaheadDistance);        
         pathC = pathRRT(1:indexLookAhead,:);
@@ -260,11 +271,13 @@ while (distanceToGoal > goalRadius)
         frrt = plot(pathRRT(:,2),pathRRT(:,1),'g','LineWidth',2);
         
         tElapsed = tElapsedRRT;
+        
+        fprintf("RRTStar is picked!");
     end
     
     % keep track of the total cost
-    totalcost = totalcost + computeFinalCost(pathC,curmap)
-    totaltime = totaltime + tElapsed
+    totalcost = totalcost + computeFinalCost(pathC,curmap);
+    totaltime = totaltime + tElapsed;
     
     rc = scatter(robotCurrentLocationC(2),robotCurrentLocationC(1),40,'cyan','filled');
     la = scatter(pathC(end,2),pathC(end,1),40,'black','filled');
@@ -331,6 +344,10 @@ while (distanceToGoal > goalRadius)
     delete(fchomp);     
     delete(frrt);
 end
+
+totalcost
+totaltime
+
 %%
 % The simulated robot has reached the goal location using the path following
 % controller along the desired path. Stop the robot.

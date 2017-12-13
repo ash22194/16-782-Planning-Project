@@ -52,7 +52,7 @@ static void planner(double* map, int x_size, int y_size,
     float goal_sample_rate = 0.2;
 
     Anytime_RRT_Star_Graph* G = new Anytime_RRT_Star_Graph(map,  robotposeX,  robotposeY,  goalposeX,  goalposeY,
-    1, x_size, epsilon, goal_sample_rate, 1000, x_size, y_size);
+    1, x_size, epsilon, goal_sample_rate, 10000, x_size, y_size);
 
 
     /******** Collision working properly? ********/

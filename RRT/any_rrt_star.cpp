@@ -191,7 +191,7 @@ bool Anytime_RRT_Star_Graph::no_collision_check(Anytime_RRT_Star_Node* new_node)
 
 vector<int> Anytime_RRT_Star_Graph::find_near_nodes(Anytime_RRT_Star_Node* new_node){
 	int num_nodes = node_list.size();
-	int radius = 50.0 * sqrt((log(num_nodes)+1 / num_nodes));
+	int radius = 1.0 * sqrt((log(num_nodes)+1 / num_nodes));
 	vector<int> near_ids;
 	
 	// cout << radius << endl;
