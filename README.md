@@ -84,7 +84,7 @@ Call the following functions in the MATLAB terminal (in the given order) after s
 
 ```
 addToPath()
-compile()
+compile(false)
 ```
 
 # Running the code
