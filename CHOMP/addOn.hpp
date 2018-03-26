@@ -281,7 +281,6 @@ void gradientFinal(arma::mat& traj, arma::vec& start, arma::mat& A, arma::mat& b
 
 void chompIterate(arma::mat traj, arma::mat& optTraj, double* finalCost, map& costMap, chompOpt& options)
 {
-	// std::cout<<"Starting CHOMP"<<std::endl;
 	auto t0 = Time::now();
 	int n = traj.n_rows;
 	arma::vec start = traj.row(0).t();
@@ -299,7 +298,7 @@ void chompIterate(arma::mat traj, arma::mat& optTraj, double* finalCost, map& co
 	map costMapx, costMapy;
 	getCostMapDerivatives(costMap,costMapx,costMapy); 
 	arma::mat Minv;
-	// std::cout<<"Trying to invert A"<<std::endl;
+	
 	try {
 		Minv = arma::inv(A);
 	}
@@ -335,8 +334,6 @@ void chompIterate(arma::mat traj, arma::mat& optTraj, double* finalCost, map& co
 			std::cout << "Time Out (CHOMP)!" << std::endl;
             break;
 		}
-
-		//std::cout<<"Iteration : "<<count<<", "<<cost<<std::endl;
 
 		gradientFinal(traj,start,A,b,costMap,costMapx,costMapy,options.lambda,grad);
 		traj = traj - options.stepSize(count)*Minv*grad;
