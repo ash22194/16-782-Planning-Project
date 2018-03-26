@@ -62,8 +62,6 @@ static void planner(double*	map, int x_size, int y_size,
                     int numofDOFs, double*** plan, int* planlength, double* plancost,
                     float epsilon, float timeLimit)
 {   
-    // printMap(map,x_size,y_size);
-    // std::cout<<"Size : "<<x_size<<","<<y_size<<std::endl;
     arma::mat costLoad;
     arma::vec o; o.zeros(2);
     convertCostMap(costLoad,map,x_size,y_size);
@@ -73,15 +71,11 @@ static void planner(double*	map, int x_size, int y_size,
     start.zeros(2); 
     start(0) = robotposeX;
     start(1) = robotposeY;
-    // start(0) = std::round(robotposeX/costMap.resolution_x)-1; 
-    // start(1) = std::round(robotposeY/costMap.resolution_y)-1;
     arma::vec goal; 
     goal.zeros(2); 
     goal(0) = goalposeX;
     goal(1) = goalposeY;
-    // goal(0) = std::round(goalposeX/costMap.resolution_x)-1; 
-    // goal(1) = std::round(goalposeY/costMap.resolution_y)-1;
-
+    
     if (start(0) < 0) {
         start(0) = 0;
     }
@@ -122,7 +116,7 @@ static void planner(double*	map, int x_size, int y_size,
     CHOMP::getInitialTrajectory(start,goal,N,traj);
     *plan = (double**) malloc(N*sizeof(double*));
     CHOMP::chompIterate(traj,optimizedTraj,plancost,costMap,options);
-    // std::cout<<"Plan size :"<<optimizedTraj.n_rows<<std::endl;
+    
     for (int i=0; i<N; i++) {
         (*plan)[i] = (double*) malloc(sizeof(double)*2);
         (*plan)[i][0] = optimizedTraj(i,0);
@@ -148,8 +142,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int y_size = mxGetN(MAP_IN);
     double* map = mxGetPr(MAP_IN);
     
-    // mexPrintf("x_size: %d, y_size: %d\n", x_size, y_size);
-    
     /* get the dimensions of the robotpose and the robotpose itself*/     
     int robotpose_M = mxGetM(ROBOT_IN);
     int robotpose_N = mxGetN(ROBOT_IN);
@@ -157,26 +149,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
 	    mexErrMsgIdAndTxt( "MATLAB:planner:invalidrobotpose",
                 "robotpose vector should be 1 by 3.");         
     }
-    
-//     mexPrintf("robotpose_M: %d, robotpose_N: %d\n", robotpose_M, robotpose_N);
-    
+        
     double* robotposeV = mxGetPr(ROBOT_IN);
     float robotposeX = (float)robotposeV[0];
     float robotposeY = (float)robotposeV[1];
     float robotposeTheta = (float)robotposeV[2];
-    
-    // mexPrintf("robotposeX: %.2f, robotposeY: %.2f, robotposeTheta: %.2f\n", 
-    //           robotposeX, robotposeY, robotposeTheta);
-    
-//     mexPrintf("cost index: %.2f\n", GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
-//     mexPrintf("cost index: %d\n", (int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size));
-//     mexPrintf("robotpose cost: %.2f\n", map[(int)GETMAPINDEX(robotposeX, robotposeY, x_size, y_size)]);
-//     for (int i = 1; i <= x_size; i++) {
-//         for (int j = 1; j <= y_size; j++) {
-//             mexPrintf("x = %d, y = %d, cost = %.2f\n", i, j, map[(int)GETMAPINDEX(i, j, x_size, y_size)]);
-//             
-//         }
-//     }
     
     /* get the dimensions of the goalpose and the goalpose itself*/     
     int goalpose_M = mxGetM(GOAL_IN);
@@ -185,20 +162,14 @@ void mexFunction(int nlhs, mxArray *plhs[],
 	    mexErrMsgIdAndTxt( "MATLAB:planner:invalidgoalpose",
                 "goalpose vector should be 1 by 3.");         
     }
-    
-//     mexPrintf("goalpose_M: %d, goalpose_N: %d\n", goalpose_M, goalpose_N);
-    
+        
     double* goalposeV = mxGetPr(GOAL_IN);
     float goalposeX = (float)goalposeV[0];
     float goalposeY = (float)goalposeV[1];
     float goalposeTheta = (float)goalposeV[2];
     
-    // mexPrintf("goalposeX: %.2f, goalposeY: %.2f, goalposeTheta: %.2f\n", 
-    //           goalposeX, goalposeY, goalposeTheta);
-    
     double* epsilonV = mxGetPr(EPSILON_IN);
     float epsilon = (float)epsilonV[0];
-    // mexPrintf("epsilon: %.2f\n", epsilon);
     
     double* timeV = mxGetPr(TIME_IN);
     float time = (float)timeV[0];
@@ -216,8 +187,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
             goalposeX, goalposeY, goalposeTheta,
             numofDOFs, &plan, &planlength, &plancost,
             epsilon, time);
-    
-    // mexPrintf("planner returned plan of length = %d\n", planlength); 
     
     /* Create return values */
     if(planlength > 0) {
